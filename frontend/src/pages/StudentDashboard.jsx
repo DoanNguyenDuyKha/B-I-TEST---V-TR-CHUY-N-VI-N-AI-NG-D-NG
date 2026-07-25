@@ -82,22 +82,36 @@ export default function StudentDashboard() {
     <div className="flex-1 max-w-6xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Sidebar Profile & Roadmap */}
       <div className="space-y-6">
-        <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg relative overflow-hidden">
+        <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg relative overflow-hidden space-y-4">
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl"></div>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/20">
               {user?.username?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h3 className="font-bold text-white text-lg">{user?.username}</h3>
-              <span className="text-xs font-semibold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20 mt-1 inline-block">
-                Lớp: {user?.classification}
+              <h3 className="font-bold text-white text-lg">{user?.fullName || user?.username}</h3>
+              <span className="text-[10px] font-semibold text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/20 mt-1 inline-block">
+                Lớp: {user?.classification || 'Chưa phân loại'}
               </span>
             </div>
           </div>
-          <div className="mt-6 pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs">
-            <div className="text-slate-400">
-              Thành viên từ: <span className="text-slate-200">2026</span>
+
+          <div className="text-xs space-y-2 border-t border-slate-800/80 pt-3 text-slate-400">
+            <div><span className="font-semibold text-slate-500">Học viên:</span> <span className="text-slate-300">{user?.username}</span></div>
+            {user?.email && user?.email !== 'N/A' && (
+              <div><span className="font-semibold text-slate-500">Email:</span> <span className="text-slate-300">{user.email}</span></div>
+            )}
+            {user?.phone && user?.phone !== 'N/A' && (
+              <div><span className="font-semibold text-slate-500">SĐT:</span> <span className="text-slate-300">{user.phone}</span></div>
+            )}
+            {user?.target && (
+              <div><span className="font-semibold text-slate-500">Mục tiêu:</span> <span className="text-indigo-400 font-semibold">{user.target}</span></div>
+            )}
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-800/80 flex justify-between items-center text-[10px]">
+            <div className="text-slate-500">
+              Thành viên từ: <span className="text-slate-300">2026</span>
             </div>
             <button onClick={logout} className="text-red-400 hover:text-red-300 font-bold transition-colors">
               Đăng xuất

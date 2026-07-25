@@ -153,19 +153,58 @@ export const AppProvider = ({ children }) => {
     fetchLessons();
   }, []);
 
+  const fetchStudents = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/students`);
+      if (res.ok) {
+        const data = await res.json();
+        setStudents(data);
+      }
+    } catch (e) {
+      console.warn("Failed to fetch students from API, using local storage fallback", e);
+    }
+  };
+
+  useEffect(() => {
+    if (user && user.role === 'Teacher') {
+      fetchStudents();
+    }
+  }, [user]);
+
   // Handle student registration
-  const registerUser = (username, role) => {
+  const registerUser = async (username, role, studentDetails = {}) => {
+    try {
+      const res = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, role, ...studentDetails })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+        fetchStudents();
+        return data;
+      }
+    } catch (err) {
+      console.warn("Failed to register via API, fallback to local storage", err);
+    }
+
     const newUser = {
       username,
-      role, // 'Student' or 'Teacher'
+      role,
+      fullName: studentDetails.fullName || username,
+      email: studentDetails.email || "N/A",
+      phone: studentDetails.phone || "N/A",
+      dob: studentDetails.dob || "N/A",
+      target: studentDetails.target || "General English",
       classification: null,
       placementTestDone: false
     };
     setUser(newUser);
     if (role === 'Student' && !students.some(s => s.username === username)) {
       setStudents(prev => [...prev, {
-        username,
-        classification: null,
+        ...newUser,
         quizScore: null,
         essayText: "",
         essayScore: null,
@@ -320,7 +359,20 @@ export const AppProvider = ({ children }) => {
   };
 
   // Update specific student classification
-  const updateStudentClassification = (username, newLevel) => {
+  const updateStudentClassification = async (username, newLevel) => {
+    try {
+      const res = await fetch(`${API_BASE}/students/update-level`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, classification: newLevel })
+      });
+      if (res.ok) {
+        fetchStudents();
+      }
+    } catch (e) {
+      console.warn("Failed to update student level on server, using local fallback", e);
+    }
+
     setStudents(prev => prev.map(s => s.username === username ? {
       ...s,
       classification: newLevel
