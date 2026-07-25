@@ -5,7 +5,10 @@ export const AppContext = createContext();
 const API_BASE = 'http://localhost:3001/api';
 
 export const AppProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const saved = sessionStorage.getItem('lms_user');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const [lessons, setLessons] = useState([]);
   const [students, setStudents] = useState(() => {
@@ -44,6 +47,14 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('lms_students', JSON.stringify(students));
   }, [students]);
+
+  useEffect(() => {
+    if (user) {
+      sessionStorage.setItem('lms_user', JSON.stringify(user));
+    } else {
+      sessionStorage.removeItem('lms_user');
+    }
+  }, [user]);
 
   // Fetch initial lessons
   const fetchLessons = async (level = '') => {
