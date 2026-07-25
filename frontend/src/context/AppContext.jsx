@@ -166,7 +166,7 @@ export const AppProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (user && user.role === 'Teacher') {
+    if (user && user.role === 'Admin') {
       fetchStudents();
     }
   }, [user]);

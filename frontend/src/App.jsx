@@ -4,7 +4,6 @@ import { AppProvider, AppContext } from './context/AppContext';
 import Home from './pages/Home';
 import PlacementTest from './pages/PlacementTest';
 import StudentDashboard from './pages/StudentDashboard';
-import TeacherDashboard from './pages/TeacherDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import { GraduationCap, Moon, Shield } from 'lucide-react';
 import './App.css';
@@ -30,9 +29,9 @@ function Header() {
             <div className="flex items-center gap-1.5 bg-slate-900/60 border border-slate-800 px-3 py-1 rounded-full text-slate-300">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>{user.username}</span>
-              <span className="text-slate-500">({user.role === 'Teacher' ? 'Giáo viên' : 'Học viên'})</span>
+              <span className="text-slate-500">({user.role === 'Admin' ? 'Quản trị viên' : 'Học viên'})</span>
             </div>
-            {user.role === 'Teacher' && (
+            {user.role === 'Admin' && (
               <Link to="/admin" className="text-slate-400 hover:text-white transition-colors flex items-center gap-1">
                 <Shield className="w-3.5 h-3.5" />
                 Admin Panel
@@ -67,8 +66,7 @@ function MainApp() {
           <Route path="/" element={<Home />} />
           <Route path="/placement-test" element={user ? <PlacementTest /> : <Navigate to="/" />} />
           <Route path="/student" element={user ? <StudentDashboard /> : <Navigate to="/" />} />
-          <Route path="/teacher" element={user && user.role === 'Teacher' ? <TeacherDashboard /> : <Navigate to="/" />} />
-          <Route path="/admin" element={user && user.role === 'Teacher' ? <AdminDashboard /> : <Navigate to="/" />} />
+          <Route path="/admin" element={user && user.role === 'Admin' ? <AdminDashboard /> : <Navigate to="/" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>

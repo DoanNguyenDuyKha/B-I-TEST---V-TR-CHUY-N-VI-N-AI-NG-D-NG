@@ -30,7 +30,7 @@ export default function Home() {
       navigate('/student');
     } else {
       registerUser(username.trim(), role, {});
-      navigate('/teacher');
+      navigate('/admin');
     }
   };
 
@@ -73,15 +73,15 @@ export default function Home() {
               </button>
               <button
                 type="button"
-                onClick={() => setRole('Teacher')}
+                onClick={() => setRole('Admin')}
                 className={`py-2 px-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all duration-200 ${
-                  role === 'Teacher'
+                  role === 'Admin'
                     ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/20'
                     : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:bg-slate-800'
                 }`}
               >
                 <GraduationCap className="w-4 h-4" />
-                Giáo viên
+                Quản trị viên
               </button>
             </div>
           </div>
