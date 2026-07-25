@@ -5,10 +5,7 @@ export const AppContext = createContext();
 const API_BASE = 'http://localhost:3001/api';
 
 export const AppProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('lms_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(null);
 
   const [lessons, setLessons] = useState([]);
   const [students, setStudents] = useState(() => {
@@ -38,20 +35,11 @@ export const AppProvider = ({ children }) => {
         quizScore: "5/5",
         essayText: "Generative AI represents a paradigm shift in education. Rarely has a technology disrupted classical models so fast. It is indispensable that students adapt.",
         essayScore: 8.9,
-        feedback: "Outstanding work! Excellent inversion structure and lexicon usage.",
+        feedback: "Excellent analytical essay. Flawless syntax and strong cohesive markers.",
         submissions: []
       }
     ];
   });
-
-  // Sync state to local storage
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('lms_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('lms_user');
-    }
-  }, [user]);
 
   useEffect(() => {
     localStorage.setItem('lms_students', JSON.stringify(students));
@@ -422,7 +410,6 @@ export const AppProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('lms_user');
   };
 
   return (

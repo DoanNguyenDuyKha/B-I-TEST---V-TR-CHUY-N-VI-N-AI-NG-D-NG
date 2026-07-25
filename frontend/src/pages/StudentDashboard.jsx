@@ -4,7 +4,7 @@ import { BookOpen, Award, CheckCircle, ChevronRight, Play, Check, Send, Award as
 import { useNavigate } from 'react-router-dom';
 
 export default function StudentDashboard() {
-  const { user, lessons, students, submitAssignment, logout, fetchLessons } = useContext(AppContext);
+  const { user, lessons, students, submitAssignment, logout, fetchLessons, updateStudentClassification } = useContext(AppContext);
   const navigate = useNavigate();
   
   // Lesson state
@@ -147,13 +147,10 @@ export default function StudentDashboard() {
 
   const handleConfirmPromotionResult = () => {
     if (progressTestResult?.decision === 'Promoted') {
-      const updatedUser = { ...user, classification: progressTestResult.newLevel };
-      localStorage.setItem('lms_user', JSON.stringify(updatedUser));
-      window.location.reload();
-    } else {
-      setIsTakingProgressTest(false);
-      setProgressTestResult(null);
+      updateStudentClassification(user.username, progressTestResult.newLevel);
     }
+    setIsTakingProgressTest(false);
+    setProgressTestResult(null);
   };
 
   const getLevelColor = (lvl) => {
