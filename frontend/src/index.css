@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: #0b0f19;
+  color: #f1f5f9;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Styles */
+.glass {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-hover:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.3);
+  transform: translateY(-2px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6366f1;
+}
+
+/* Animation utilities */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.5;
+    filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.2));
+  }
+  50% {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 25px rgba(139, 92, 246, 0.4));
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 4s infinite ease-in-out;
+}

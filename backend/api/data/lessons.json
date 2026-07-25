@@ -1,0 +1,117 @@
+[
+  {
+    "id": "lesson-1",
+    "level": "Basic",
+    "title": "Essential Vocabulary: Introduce Yourself",
+    "description": "Learn basic English words and greeting phrases to introduce yourself confidently.",
+    "vocabulary": [
+      { "word": "Introduce", "ipa": "/ˌɪntrəˈdjuːs/", "type": "Verb", "meaning": "Giới thiệu", "example": "Let me introduce myself. My name is Nam." },
+      { "word": "Greeting", "ipa": "/ˈɡriːtɪŋ/", "type": "Noun", "meaning": "Lời chào", "example": "'Hello' is a friendly greeting." },
+      { "word": "Occupation", "ipa": "/ˌɒkjuˈpeɪʃn/", "type": "Noun", "meaning": "Nghề nghiệp", "example": "What is your occupation? I am a student." }
+    ],
+    "grammar": {
+      "point": "Verb TO BE (am/is/are) in Simple Present",
+      "explanation": "Dùng để giới thiệu tên, tuổi, quốc tịch, nghề nghiệp.",
+      "structures": [
+        "I + am (I am a student.)",
+        "He/She/It + is (He is 20 years old.)",
+        "You/We/They + are (They are friendly.)"
+      ]
+    },
+    "reading": {
+      "title": "Meet Huy",
+      "content": "Hello! My name is Huy. I am nineteen years old. I live in Ho Chi Minh City. I am a student at the university. My major is computer science. In my free time, I like reading books and playing football. I want to learn English to get a good job in the future.",
+      "questions": [
+        {
+          "id": "q1",
+          "question": "How old is Huy?",
+          "options": ["18 years old", "19 years old", "20 years old", "21 years old"],
+          "answer": "19 years old"
+        },
+        {
+          "id": "q2",
+          "question": "What is Huy's occupation?",
+          "options": ["Teacher", "Engineer", "Student", "Doctor"],
+          "answer": "Student"
+        }
+      ]
+    },
+    "essayPrompt": "Write a short paragraph (50-80 words) introducing yourself, including your name, age, city, and hobbies."
+  },
+  {
+    "id": "lesson-2",
+    "level": "Intermediate",
+    "title": "Practical Grammar: Present Perfect vs Simple Past",
+    "description": "Master the distinction between activities completed in the past and those connected to the present.",
+    "vocabulary": [
+      { "word": "Experience", "ipa": "/ɪkˈspɪəriəns/", "type": "Noun", "meaning": "Trải nghiệm/Kinh nghiệm", "example": "Travelling gives you valuable life experiences." },
+      { "word": "Transition", "ipa": "/trænˈzɪʃn/", "type": "Verb/Noun", "meaning": "Chuyển giao/Sự chuyển đổi", "example": "The country is making a transition to renewable energy." },
+      { "word": "Accomplish", "ipa": "/əˈkʌmplɪʃ/", "type": "Verb", "meaning": "Hoàn thành/Đạt được", "example": "She accomplished her goals after years of hard work." }
+    ],
+    "grammar": {
+      "point": "Present Perfect vs Simple Past",
+      "explanation": "Simple Past dùng cho hành động bắt đầu và kết thúc hoàn toàn trong quá khứ. Present Perfect dùng cho hành động xảy ra trong quá khứ kéo dài đến hiện tại hoặc có kết quả liên quan ở hiện tại.",
+      "structures": [
+        "Simple Past: S + V2/ed (I went to Hanoi last year.)",
+        "Present Perfect: S + have/has + V3/ed (I have lived here for 5 years.)"
+      ]
+    },
+    "reading": {
+      "title": "A Journey of Career Transition",
+      "content": "Minh has been a software QA tester for three years. However, last month, he decided to transition into an AI Developer. He has already completed two online courses on machine learning. Yesterday, he successfully deployed his first API on Vercel. Although he faced some minor configuration bugs, he fixed them quickly. He believes that continuous learning is the key to accomplishing career breakthroughs in the digital era.",
+      "questions": [
+        {
+          "id": "q1",
+          "question": "How long has Minh worked as a software QA tester?",
+          "options": ["For 2 years", "For 3 years", "For 1 month", "For 5 years"],
+          "answer": "For 3 years"
+        },
+        {
+          "id": "q2",
+          "question": "What did Minh accomplish yesterday?",
+          "options": ["Completed a course", "Resigned from his job", "Deployed his first API on Vercel", "Learnt Python"],
+          "answer": "Deployed his first API on Vercel"
+        }
+      ]
+    },
+    "essayPrompt": "Write a paragraph (100-150 words) describing a major transition or experience in your career or education. Explain what you have accomplished so far."
+  },
+  {
+    "id": "lesson-3",
+    "level": "Advanced",
+    "title": "Advanced Writing: Inversion & Subjunctive Mood",
+    "description": "Elevate your essay style by utilizing formal inversion structures and expressing hypothetical scenarios.",
+    "vocabulary": [
+      { "word": "Paradigm shift", "ipa": "/ˈpærədaɪm ʃɪft/", "type": "Noun", "meaning": "Bước chuyển đổi căn bản/Thay đổi tư duy", "example": "The rise of generative AI represents a paradigm shift in education." },
+      { "word": "Indispensable", "ipa": "/ˌɪndɪˈspensəbl/", "type": "Adjective", "meaning": "Không thể thiếu", "example": "Critical thinking is indispensable for academic writing." },
+      { "word": "Ameliorate", "ipa": "/əˈmiːliəreɪt/", "type": "Verb", "meaning": "Cải thiện/Làm tốt hơn", "example": "Measures were taken to ameliorate learning conditions." }
+    ],
+    "grammar": {
+      "point": "Inversion with Negative Adverbials & Subjunctive Mood",
+      "explanation": "Đảo ngữ dùng để nhấn mạnh mức độ quan trọng. Câu giả định (Subjunctive Mood) dùng sau các động từ đề xuất, yêu cầu (demand, suggest, recommend).",
+      "structures": [
+        "Inversion: Negative Word + Auxiliary Verb + S + Verb (Not only is AI powerful, but it also adapts to learners.)",
+        "Subjunctive: S1 + recommend/suggest + that + S2 + V (bare-infinitive) (I suggest that he study advanced grammar.)"
+      ]
+    },
+    "reading": {
+      "title": "The Paradigm Shift in Modern Pedagogy",
+      "content": "Rarely has technology disrupted traditional educational models as profoundly as artificial intelligence. Under the old paradigm, students progressed at a uniform speed, regardless of individual comprehension deficits or acceleration capabilities. The incorporation of adaptive learning platforms represents a major step to ameliorate these issues. It is crucial that the educator remain a supervisor who guides critical thinking, rather than a mere broadcaster of information. Only when human mentorship and AI-driven personalization are combined can we truly achieve an indispensable learning environment.",
+      "questions": [
+        {
+          "id": "q1",
+          "question": "What is the author's suggestion regarding the role of the educator?",
+          "options": ["To broadcast as much information as possible", "To guide critical thinking as a supervisor", "To let AI replace teachers completely", "To stick to traditional uniform progression"],
+          "answer": "To guide critical thinking as a supervisor"
+        },
+        {
+          "id": "q2",
+          "question": "Which word is synonymous with 'essential' or 'absolutely necessary' in the text?",
+          "options": ["Uniform", "Deficits", "Ameliorate", "Indispensable"],
+          "answer": "Indispensable"
+        }
+      ]
+    },
+    "essayPrompt": "Write an argumentative essay (200-250 words) on how artificial intelligence is changing the educational landscape. Use at least one inversion structure and one subjunctive mood structure."
+  }
+]
