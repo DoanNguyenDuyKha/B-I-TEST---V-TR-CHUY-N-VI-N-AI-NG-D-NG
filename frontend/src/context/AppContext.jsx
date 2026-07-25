@@ -171,20 +171,57 @@ export const AppProvider = ({ children }) => {
     }
   }, [user]);
 
-  // Handle student registration
-  const registerUser = async (username, role, studentDetails = {}) => {
+  // Handle login
+  const loginUser = async (username, password) => {
     try {
-      const res = await fetch(`${API_BASE}/register`, {
+      const res = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, role, ...studentDetails })
+        body: JSON.stringify({ username, password })
       });
 
       if (res.ok) {
         const data = await res.json();
         setUser(data);
         fetchStudents();
-        return data;
+        return { success: true, user: data };
+      } else {
+        const errData = await res.json();
+        return { success: false, error: errData.error };
+      }
+    } catch (err) {
+      console.warn("Failed to login via API, running local mock login", err);
+      if (username === 'admin' && password === 'admin123') {
+        const adminUser = { username: 'admin', role: 'Admin', fullName: 'System Administrator', placementTestDone: true };
+        setUser(adminUser);
+        return { success: true, user: adminUser };
+      }
+      const existing = students.find(s => s.username === username);
+      if (existing) {
+        setUser(existing);
+        return { success: true, user: existing };
+      }
+      return { success: false, error: "Tên đăng nhập hoặc mật khẩu không chính xác." };
+    }
+  };
+
+  // Handle student registration
+  const registerUser = async (username, password, role, studentDetails = {}) => {
+    try {
+      const res = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role, ...studentDetails })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+        fetchStudents();
+        return { success: true, user: data };
+      } else {
+        const errData = await res.json();
+        return { success: false, error: errData.error };
       }
     } catch (err) {
       console.warn("Failed to register via API, fallback to local storage", err);
@@ -192,6 +229,7 @@ export const AppProvider = ({ children }) => {
 
     const newUser = {
       username,
+      password,
       role,
       fullName: studentDetails.fullName || username,
       email: studentDetails.email || "N/A",
@@ -212,6 +250,7 @@ export const AppProvider = ({ children }) => {
         submissions: []
       }]);
     }
+    return { success: true, user: newUser };
   };
 
   // Submit placement test
@@ -392,6 +431,7 @@ export const AppProvider = ({ children }) => {
       user,
       lessons,
       students,
+      loginUser,
       registerUser,
       submitPlacementTest,
       submitAssignment,

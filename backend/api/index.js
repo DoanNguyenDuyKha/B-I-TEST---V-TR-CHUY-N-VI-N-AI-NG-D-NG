@@ -23,6 +23,7 @@ mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log("Successfully connected to MongoDB:", MONGODB_URI);
     await seedLessons();
+    await seedAdmin();
   })
   .catch(err => {
     console.error("MongoDB connection error:", err);
@@ -49,6 +50,29 @@ async function seedLessons() {
     }
   } catch (error) {
     console.error("Error seeding lessons:", error);
+  }
+}
+
+async function seedAdmin() {
+  try {
+    const adminExists = await User.findOne({ role: 'Admin' });
+    if (!adminExists) {
+      console.log("Seed admin account...");
+      const defaultAdmin = new User({
+        username: "admin",
+        password: "admin123",
+        role: "Admin",
+        fullName: "System Administrator",
+        email: "admin@lms.com",
+        phone: "0000000000",
+        dob: "1990-01-01",
+        target: "Administration"
+      });
+      await defaultAdmin.save();
+      console.log("Admin seeded successfully (admin/admin123)!");
+    }
+  } catch (error) {
+    console.error("Error seeding admin:", error);
   }
 }
 
@@ -170,23 +194,21 @@ app.get('/api/lessons', async (req, res) => {
 
 // 2. REGISTER USER WITH EXTENDED DETAILS
 app.post('/api/register', async (req, res) => {
-  const { username, role, fullName, email, phone, dob, target } = req.body;
+  const { username, password, role, fullName, email, phone, dob, target } = req.body;
 
-  if (!username || !role) {
-    return res.status(400).json({ error: "Username and role are required." });
+  if (!username || !password || !role) {
+    return res.status(400).json({ error: "Username, password, and role are required." });
   }
 
   try {
     let existingUser = await User.findOne({ username });
     if (existingUser) {
-      // Return existing user info
-      const obj = existingUser.toObject();
-      obj.id = obj._id.toString();
-      return res.json(obj);
+      return res.status(400).json({ error: "Username already exists." });
     }
 
     const newUser = new User({
       username,
+      password,
       role,
       fullName: fullName || username,
       email: email || "N/A",
@@ -197,6 +219,32 @@ app.post('/api/register', async (req, res) => {
 
     await newUser.save();
     const obj = newUser.toObject();
+    obj.id = obj._id.toString();
+    res.json(obj);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2.5 LOGIN USER
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password are required." });
+  }
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ error: "Incorrect username or password." });
+    }
+
+    if (user.password !== password) {
+      return res.status(401).json({ error: "Incorrect username or password." });
+    }
+
+    const obj = user.toObject();
     obj.id = obj._id.toString();
     res.json(obj);
   } catch (error) {
