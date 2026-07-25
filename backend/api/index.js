@@ -334,6 +334,44 @@ app.post('/api/placement-test', async (req, res) => {
       classification = "Intermediate";
     }
 
+    const quizExplanations = {
+      q1: "Đáp án đúng là B: 'He doesn't like studying English at night'. 'He' là ngôi thứ ba số ít nên dùng trợ động từ 'doesn't' đi cùng động từ nguyên mẫu 'like'.",
+      q2: "Đáp án đúng là A: 'since'. Dùng 'since + mốc thời gian' (2021) trong thì Hiện tại hoàn thành để diễn tả hành động bắt đầu từ mốc thời gian đó.",
+      q3: "Đáp án đúng là C: 'Crucial'. Từ này đồng nghĩa với 'essential' và 'indispensable' đều mang nghĩa là tối quan trọng, cốt lõi.",
+      q4: "Đáp án đúng là B: 'had finished'. Sự việc hoàn thành bài tập xảy ra trước sự việc giáo viên đến trong quá khứ, nên chia ở thì Quá khứ hoàn thành.",
+      q5: "Đáp án đúng là D: 'does she speak'. Cấu trúc đảo ngữ với 'Not only': 'Not only + trợ động từ + S + V nguyên mẫu, but also...'.",
+      q6: "Đáp án đúng là A: 'of'. Tính từ 'capable' đi kèm giới từ 'of' (capable of doing something: có khả năng làm gì).",
+      q7: "Đáp án đúng là C: 'had'. Câu điều kiện loại 2 diễn tả giả thuyết không có thật ở hiện tại: 'If + S + V2/ed, S + would + V'.",
+      q8: "Đáp án đúng là B: 'called off'. Cụm động từ 'call off' nghĩa là hủy bỏ cuộc họp/sự kiện.",
+      q9: "Đáp án đúng là D: 'Plentiful'. 'Abundant' nghĩa là dồi dào, phong phú, đồng nghĩa với 'Plentiful'.",
+      q10: "Đáp án đúng là B: 'be'. Cấu trúc giả định (Subjunctive mood) với động từ gợi ý: 'suggest + that + S + V nguyên mẫu' (be postponed)."
+    };
+
+    const questionTexts = {
+      q1: "Choose the correct sentence structure:",
+      q2: "I have lived in Ho Chi Minh City ______ 2021.",
+      q3: "Select the word that is synonymous with 'essential' or 'indispensable':",
+      q4: "By the time the teacher arrived, the students ______ their homework.",
+      q5: "Fill in the blank: 'Not only ______ English, but she also speaks Spanish fluently.'",
+      q6: "Choose the correct preposition: 'She is highly capable ______ solving complex problems.'",
+      q7: "If I ______ more time, I would travel around the world.",
+      q8: "The seminar was ______ because of the low registration numbers.",
+      q9: "Choose the word with the CLOSEST meaning to 'abundant':",
+      q10: "The manager suggested that the meeting ______ postponed until next week."
+    };
+
+    const questionsFeedback = [];
+    Object.keys(correctKeys).forEach(key => {
+      questionsFeedback.push({
+        id: key,
+        question: questionTexts[key],
+        studentAnswer: quizAnswers?.[key] || "Chưa chọn",
+        correctAnswer: correctKeys[key],
+        isCorrect: quizAnswers?.[key] === correctKeys[key],
+        explanation: quizExplanations[key]
+      });
+    });
+
     // Save evaluation to student profile
     const updatedUser = await User.findOneAndUpdate(
       { username },
@@ -353,6 +391,7 @@ app.post('/api/placement-test', async (req, res) => {
     res.json({
       username,
       quizScore: `${quizScore}/${totalQuiz}`,
+      questionsFeedback,
       essayEvaluation: essayEval,
       classification,
       matchedLessons: (await Lesson.find({ level: classification })).map(l => {

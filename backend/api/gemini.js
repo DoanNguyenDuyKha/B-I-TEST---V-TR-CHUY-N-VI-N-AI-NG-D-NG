@@ -104,13 +104,13 @@ export async function aiEvaluateWriting(text, levelGoal) {
 
 // 2. AI GENERATE PROGRESS TEST (5 Quizzes + 1 Writing)
 export async function aiGenerateProgressTest(level) {
-  const systemInstruction = "You are an English test generator. You must always output responses in a strict JSON array representing a quiz test matching the CEFR level. The JSON must contain a list of 5 multiple-choice questions (each containing fields: id, question, options as array of 4 strings, and answer as the exact correct option string) and 1 essay prompt (field name: essayPrompt as string).";
+  const systemInstruction = "You are an English test generator. You must always output responses in a strict JSON object representing a quiz test matching the CEFR level. The JSON must contain: questions (a list of 5 multiple-choice questions, each containing fields: id, question, options as array of 4 strings, answer as the exact correct option string, and explanation as a string in Vietnamese explaining why this answer is correct) and essayPrompt (string).";
   
   const prompt = `Create a custom progress test for a student in the ${level} class.
   The test must include:
   1. 5 multiple-choice grammar and vocabulary questions targeted specifically for ${level} level.
   2. 1 writing essay prompt suited for ${level} level.
-  Return only the JSON with keys: questions (array of 5 objects containing: id, question, options, answer) and essayPrompt (string).`;
+  Return only the JSON with keys: questions (array of 5 objects containing: id, question, options, answer, explanation) and essayPrompt (string).`;
 
   try {
     const rawResult = await callGemini(prompt, systemInstruction);
@@ -123,22 +123,22 @@ export async function aiGenerateProgressTest(level) {
     if (level === "Basic") {
       return {
         questions: [
-          { id: "q1", question: "Which word is a verb?", options: ["Happiness", "Happy", "Happily", "Run"], answer: "Run" },
-          { id: "q2", question: "She ______ to school every day.", options: ["go", "goes", "going", "gone"], answer: "goes" },
-          { id: "q3", question: "Identify the greeting:", options: ["Goodbye", "Hello", "Thank you", "Sorry"], answer: "Hello" },
-          { id: "q4", question: "I ______ a student.", options: ["am", "is", "are", "be"], answer: "am" },
-          { id: "q5", question: "Choose the correct spelling:", options: ["English", "Englesh", "Inglish", "Englich"], answer: "English" }
+          { id: "q1", question: "Which word is a verb?", options: ["Happiness", "Happy", "Happily", "Run"], answer: "Run", explanation: "Từ 'Run' (chạy) chỉ hành động, do đó nó là động từ (verb)." },
+          { id: "q2", question: "She ______ to school every day.", options: ["go", "goes", "going", "gone"], answer: "goes", explanation: "Chủ ngữ là 'She' (ngôi thứ ba số ít), câu diễn tả thói quen hàng ngày nên dùng thì hiện tại đơn thêm 'es' thành 'goes'." },
+          { id: "q3", question: "Identify the greeting:", options: ["Goodbye", "Hello", "Thank you", "Sorry"], answer: "Hello", explanation: "Từ 'Hello' (xin chào) dùng để chào hỏi lúc gặp mặt." },
+          { id: "q4", question: "I ______ a student.", options: ["am", "is", "are", "be"], answer: "am", explanation: "Chủ ngữ là 'I' đi với động từ to be chia ở hiện tại đơn là 'am'." },
+          { id: "q5", question: "Choose the correct spelling:", options: ["English", "Englesh", "Inglish", "Englich"], answer: "English", explanation: "'English' (Tiếng Anh/người Anh) là cách viết chính tả đúng chuẩn duy nhất." }
         ],
         essayPrompt: "Write a short paragraph (50-60 words) describing your favorite food and why you like it."
       };
     } else if (level === "Advanced") {
       return {
         questions: [
-          { id: "q1", question: "Had we known about the storm, we ______ the trip.", options: ["would cancel", "canceled", "would have canceled", "will cancel"], answer: "would have canceled" },
-          { id: "q2", question: "Which word is synonymous with 'indispensable'?", options: ["Trivial", "Crucial", "Vague", "Superficial"], answer: "Crucial" },
-          { id: "q3", question: "It is essential that he ______ the document immediately.", options: ["submits", "submit", "submitted", "submitting"], answer: "submit" },
-          { id: "q4", question: "Seldom ______ such a beautiful scenery.", options: ["we see", "do we see", "we saw", "did we saw"], answer: "do we see" },
-          { id: "q5", question: "Identify the word meaning a 'paradigm shift':", options: ["Fundamental change", "Small tweak", "Constant state", "Routine event"], answer: "Fundamental change" }
+          { id: "q1", question: "Had we known about the storm, we ______ the trip.", options: ["would cancel", "canceled", "would have canceled", "will cancel"], answer: "would have canceled", explanation: "Đây là câu điều kiện loại 3 đảo ngữ (Had we known...), vế sau phải dùng dạng 'would have + V3/ed'." },
+          { id: "q2", question: "Which word is synonymous with 'indispensable'?", options: ["Trivial", "Crucial", "Vague", "Superficial"], answer: "Crucial", explanation: "'Indispensable' có nghĩa là không thể thiếu, đồng nghĩa với 'Crucial' (quan trọng/cốt lõi)." },
+          { id: "q3", question: "It is essential that he ______ the document immediately.", options: ["submits", "submit", "submitted", "submitting"], answer: "submit", explanation: "Cấu trúc giả định (Subjunctive mood): 'It is essential that + S + V (bare-infinitive)', do đó động từ 'submit' giữ nguyên mẫu không chia." },
+          { id: "q4", question: "Seldom ______ such a beautiful scenery.", options: ["we see", "do we see", "we saw", "did we saw"], answer: "do we see", explanation: "Trạng từ phủ định 'Seldom' đứng đầu câu yêu cầu cấu trúc đảo ngữ: 'Seldom + Trợ động từ + S + V'." },
+          { id: "q5", question: "Identify the word meaning a 'paradigm shift':", options: ["Fundamental change", "Small tweak", "Constant state", "Routine event"], answer: "Fundamental change", explanation: "'Paradigm shift' nghĩa là một sự thay đổi căn bản về tư duy hoặc mô hình (Fundamental change)." }
         ],
         essayPrompt: "Write an academic essay (150-200 words) discussing whether technology isolates people or brings them together."
       };
@@ -146,11 +146,11 @@ export async function aiGenerateProgressTest(level) {
       // Intermediate (Default)
       return {
         questions: [
-          { id: "q1", question: "If it ______ tomorrow, we will stay at home.", options: ["rains", "rain", "will rain", "rained"], answer: "rains" },
-          { id: "q2", question: "I ______ in Ho Chi Minh City since 2021.", options: ["live", "lived", "have lived", "am living"], answer: "have lived" },
-          { id: "q3", question: "She is interested ______ learning English.", options: ["on", "at", "in", "for"], answer: "in" },
-          { id: "q4", question: "By the time the bell rang, the teacher ______ the class.", options: ["started", "had started", "has started", "starts"], answer: "had started" },
-          { id: "q5", question: "We decided to ______ the match due to rain.", options: ["put off", "put on", "take off", "call off"], answer: "call off" }
+          { id: "q1", question: "If it ______ tomorrow, we will stay at home.", options: ["rains", "rain", "will rain", "rained"], answer: "rains", explanation: "Câu điều kiện loại 1 (If + S + V(hiện tại đơn), S + will + V)." },
+          { id: "q2", question: "I ______ in Ho Chi Minh City since 2021.", options: ["live", "lived", "have lived", "am living"], answer: "have lived", explanation: "Dấu hiệu 'since 2021' chỉ một hành động bắt đầu từ quá khứ kéo dài đến hiện tại, sử dụng thì Hiện tại hoàn thành." },
+          { id: "q3", question: "She is interested ______ learning English.", options: ["on", "at", "in", "for"], answer: "in", explanation: "Cụm tính từ cố định: 'be interested in' (thích thú/quan tâm làm gì)." },
+          { id: "q4", question: "By the time the bell rang, the teacher ______ the class.", options: ["started", "had started", "has started", "starts"], answer: "had started", explanation: "Hành động giáo viên bắt đầu lớp học xảy ra trước hành động tiếng chuông reo trong quá khứ, chia ở thì Quá khứ hoàn thành." },
+          { id: "q5", question: "We decided to ______ the match due to rain.", options: ["put off", "put on", "take off", "call off"], answer: "call off", explanation: "'Call off' nghĩa là hủy bỏ trận đấu do thời tiết xấu." }
         ],
         essayPrompt: "Write a paragraph (100-120 words) about your dream holiday destinations."
       };

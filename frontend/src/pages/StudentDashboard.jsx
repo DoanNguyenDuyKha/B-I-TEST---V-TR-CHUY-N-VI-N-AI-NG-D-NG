@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AppContext } from '../context/AppContext';
-import { BookOpen, Award, CheckCircle, ChevronRight, Play, Check, Send, Award as Medal, Sparkles, BookOpen as BookIcon, GraduationCap, Loader2, AlertCircle, FileText } from 'lucide-react';
+import { BookOpen, Award, CheckCircle, ChevronRight, Play, Check, Send, Award as Medal, Sparkles, BookOpen as BookIcon, GraduationCap, Loader2, AlertCircle, FileText, XCircle, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function StudentDashboard() {
@@ -24,6 +24,9 @@ export default function StudentDashboard() {
   const [progressEssayText, setProgressEssayText] = useState('');
   const [progressSubmitting, setProgressSubmitting] = useState(false);
   const [progressTestResult, setProgressTestResult] = useState(null);
+  
+  // Phase of progress test result: 'review' (review mcq & essay feedback first) or 'result' (show congratulatory/retention screen)
+  const [progressPhase, setProgressPhase] = useState('review');
 
   const currentStudentData = students.find(s => s.username === user?.username);
   const matchedLessons = lessons.filter(l => l.level === user?.classification);
@@ -76,6 +79,7 @@ export default function StudentDashboard() {
     setProgressQuizAnswers({});
     setProgressEssayText('');
     setProgressTestResult(null);
+    setProgressPhase('review');
 
     try {
       const res = await fetch(`http://localhost:3001/api/progress-test?level=${user?.classification}`);
@@ -90,11 +94,11 @@ export default function StudentDashboard() {
       // Fallback
       setProgressTest({
         questions: [
-          { id: "q1", question: "Choose the correct spelling:", options: ["English", "Englesh", "Inglish", "Englich"], answer: "English" },
-          { id: "q2", question: "If it ______ tomorrow, we will stay at home.", options: ["rains", "rain", "will rain", "rained"], answer: "rains" },
-          { id: "q3", question: "She is interested ______ learning English.", options: ["on", "at", "in", "for"], answer: "in" },
-          { id: "q4", question: "I have lived in Ho Chi Minh City ______ 2021.", options: ["since", "for", "in", "ago"], answer: "since" },
-          { id: "q5", question: "Choose the word with the CLOSEST meaning to 'abundant':", options: ["Scarce", "Small", "Rare", "Plentiful"], answer: "Plentiful" }
+          { id: "q1", question: "Choose the correct spelling:", options: ["English", "Englesh", "Inglish", "Englich"], answer: "English", explanation: "'English' (Tiếng Anh/người Anh) là cách viết chính tả đúng chuẩn duy nhất." },
+          { id: "q2", question: "If it ______ tomorrow, we will stay at home.", options: ["rains", "rain", "will rain", "rained"], answer: "rains", explanation: "Câu điều kiện loại 1 (If + S + V(hiện tại đơn), S + will + V)." },
+          { id: "q3", question: "She is interested ______ learning English.", options: ["on", "at", "in", "for"], answer: "in", explanation: "Cụm tính từ cố định: 'be interested in' (thích thú/quan tâm làm gì)." },
+          { id: "q4", question: "I have lived in Ho Chi Minh City ______ 2021.", options: ["since", "for", "in", "ago"], answer: "since", explanation: "Dấu hiệu 'since 2021' chỉ một hành động bắt đầu từ quá khứ kéo dài đến hiện tại, sử dụng thì Hiện tại hoàn thành." },
+          { id: "q5", question: "Choose the word with the CLOSEST meaning to 'abundant':", options: ["Scarce", "Small", "Rare", "Plentiful"], answer: "Plentiful", explanation: "'Abundant' nghĩa là dồi dào, phong phú, đồng nghĩa với 'Plentiful'." }
         ],
         essayPrompt: "Write a short paragraph (80-120 words) explaining how your English study target aligns with your future career goals."
       });
@@ -130,15 +134,7 @@ export default function StudentDashboard() {
       if (res.ok) {
         const data = await res.json();
         setProgressTestResult(data);
-        // Force refresh the context/user state by updating local storage user classification
-        if (data.decision === 'Promoted') {
-          const updatedUser = { ...user, classification: data.newLevel };
-          localStorage.setItem('lms_user', JSON.stringify(updatedUser));
-          // Quick timeout to sync
-          setTimeout(() => {
-            window.location.reload();
-          }, 4000);
-        }
+        setProgressPhase('review'); // Default to review phase first
       } else {
         throw new Error("Failed to evaluate promotion");
       }
@@ -146,6 +142,17 @@ export default function StudentDashboard() {
       console.error(e);
     } finally {
       setProgressSubmitting(false);
+    }
+  };
+
+  const handleConfirmPromotionResult = () => {
+    if (progressTestResult?.decision === 'Promoted') {
+      const updatedUser = { ...user, classification: progressTestResult.newLevel };
+      localStorage.setItem('lms_user', JSON.stringify(updatedUser));
+      window.location.reload();
+    } else {
+      setIsTakingProgressTest(false);
+      setProgressTestResult(null);
     }
   };
 
@@ -282,7 +289,7 @@ export default function StudentDashboard() {
                 <p className="text-xs text-slate-400 mt-0.5">Sinh tự động bằng Google Gemini AI</p>
               </div>
               <button 
-                onClick={() => setIsTakingProgressTest(false)} 
+                onClick={() => { setIsTakingProgressTest(false); setProgressTestResult(null); }} 
                 className="text-slate-500 hover:text-slate-300 text-xs font-bold"
               >
                 Hủy bỏ
@@ -294,43 +301,122 @@ export default function StudentDashboard() {
                 <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
                 <span className="text-xs text-slate-400 font-semibold">Gemini AI đang soạn bài kiểm tra thích ứng...</span>
               </div>
-            ) : progressTestResult ? (
-              /* Promotion Results view */
-              <div className="space-y-6 text-center py-6">
-                <div className={`inline-flex p-4 rounded-full border ${
-                  progressTestResult.decision === 'Promoted' 
-                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                }`}>
-                  <Award className="w-12 h-12" />
-                </div>
+            ) : progressTestResult && progressPhase === 'review' ? (
+              /* Review Progress Test MCQs & Essay */
+              <div className="space-y-6">
                 <div>
-                  <h4 className="text-2xl font-black text-white">Kết Quả Đánh Giá Năng Lực</h4>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border mt-3 ${
-                    progressTestResult.decision === 'Promoted'
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                      : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                  }`}>
-                    Quyết định: {progressTestResult.decision === 'Promoted' ? 'ĐƯỢC NÂNG CẤP LỚP' : 'BẢO LƯU TRÌNH ĐỘ'}
-                  </span>
+                  <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider border-b border-slate-800 pb-2">
+                    Xem lại bài thi nâng lớp định kỳ
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1">Phân tích chi tiết từng câu trả lời trắc nghiệm và đánh giá bài viết</p>
                 </div>
 
-                <div className="bg-slate-950 p-4 rounded-xl border border-slate-900 text-left space-y-2 max-w-lg mx-auto">
-                  <span className="text-[10px] text-indigo-400 uppercase tracking-wider font-bold block">Nhận xét chi tiết từ Academic Director AI</span>
-                  <p className="text-xs text-slate-300 leading-relaxed">{progressTestResult.explanation}</p>
+                <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
+                  {progressTest?.questions?.map((q, idx) => {
+                    const studentAns = progressQuizAnswers[q.id] || "Chưa chọn";
+                    const isCorrect = studentAns === q.answer;
+                    
+                    return (
+                      <div key={q.id} className="p-4 bg-slate-950/60 rounded-xl border border-slate-900 space-y-2">
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-xs font-bold text-slate-200">Câu {idx + 1}: {q.question}</p>
+                          {isCorrect ? (
+                            <span className="text-emerald-400 flex items-center gap-1 text-[10px] font-bold">
+                              <CheckCircle className="w-3.5 h-3.5" /> Đúng
+                            </span>
+                          ) : (
+                            <span className="text-red-400 flex items-center gap-1 text-[10px] font-bold">
+                              <XCircle className="w-3.5 h-3.5" /> Sai
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-[10px]">
+                          <div className="bg-slate-900 p-2 rounded border border-slate-800">
+                            <span className="text-slate-500 font-semibold block">Bạn đã chọn:</span>
+                            <span className={isCorrect ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>{studentAns}</span>
+                          </div>
+                          <div className="bg-slate-900 p-2 rounded border border-slate-800">
+                            <span className="text-slate-500 font-semibold block">Đáp án đúng:</span>
+                            <span className="font-bold text-emerald-400">{q.answer}</span>
+                          </div>
+                        </div>
+
+                        <div className="bg-indigo-950/20 p-2.5 rounded border border-indigo-500/10 text-xs text-indigo-200/90 leading-relaxed flex gap-2">
+                          <span>💡</span>
+                          <p><span className="font-bold text-indigo-300">Giải thích:</span> {q.explanation}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
-                {progressTestResult.decision === 'Promoted' && (
-                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs max-w-lg mx-auto font-semibold">
-                    🎉 Tuyệt vời! Bạn đã được thăng hạng lên lớp: {progressTestResult.newLevel}. Trang web sẽ tự động tải lại lộ trình mới trong giây lát...
+                <div className="bg-slate-950 p-4 rounded-xl border border-slate-900 space-y-2">
+                  <span className="text-xs font-bold text-indigo-400 block uppercase tracking-wider">Bài viết luận tự luận của bạn:</span>
+                  <p className="text-xs text-slate-350 italic">"{progressEssayText}"</p>
+                </div>
+
+                <button
+                  onClick={() => setProgressPhase('result')}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  Xem Quyết Định Thăng Hạng / Bảo Lưu
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            ) : progressTestResult && progressPhase === 'result' ? (
+              /* Promotion / Retention Screen with graphics */
+              <div className="space-y-6 text-center py-6">
+                {progressTestResult.decision === 'Promoted' ? (
+                  /* Congratulatory Screen */
+                  <div className="space-y-6">
+                    <div className="inline-flex p-4 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-emerald-400 animate-bounce">
+                      <Medal className="w-16 h-16" />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-3xl font-black text-white">🎉 XUẤT SẮC! BẠN ĐÃ ĐƯỢC THĂNG HẠNG LỚP</h4>
+                      <p className="text-xs text-slate-400">Gemini AI đánh giá bạn đã tích lũy đủ kỹ năng cần thiết để vượt cấp</p>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-4 py-4 max-w-sm mx-auto">
+                      <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-xl text-sm font-bold text-slate-400">
+                        {user?.classification}
+                      </div>
+                      <ChevronRight className="w-6 h-6 text-indigo-400" />
+                      <div className="bg-emerald-500 border border-emerald-400 px-5 py-3 rounded-xl text-sm font-bold text-white shadow-lg shadow-emerald-500/20">
+                        {progressTestResult.newLevel}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Comfort / Encouraging Retention Screen */
+                  <div className="space-y-6">
+                    <div className="inline-flex p-4 bg-amber-500/10 rounded-full border border-amber-500/20 text-amber-400">
+                      <Heart className="w-16 h-16" />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-3xl font-black text-white">💪 HÃY TIẾP TỤC CỐ GẮNG ÔN LUYỆN!</h4>
+                      <p className="text-xs text-slate-400">Bạn đã hoàn thành rất tốt bài thi, hãy kiên trì rèn luyện thêm để thăng hạng lần tới nhé</p>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-4 py-2 max-w-sm mx-auto">
+                      <div className="bg-slate-900 border border-slate-800 px-6 py-3 rounded-xl text-sm font-bold text-amber-400">
+                        Giữ cấp lớp: {user?.classification}
+                      </div>
+                    </div>
                   </div>
                 )}
 
+                <div className="bg-slate-950 p-5 rounded-2xl border border-slate-900 text-left space-y-2 max-w-lg mx-auto">
+                  <span className="text-[10px] text-indigo-400 uppercase tracking-wider font-bold block">Nhận xét từ Giám đốc Học thuật AI:</span>
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">{progressTestResult.explanation}</p>
+                </div>
+
                 <button
-                  onClick={() => window.location.reload()}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-6 rounded-lg text-xs"
+                  onClick={handleConfirmPromotionResult}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-8 rounded-xl text-xs transition-all shadow-lg"
                 >
-                  Xác nhận & Quay lại
+                  {progressTestResult.decision === 'Promoted' ? 'Cập nhật lộ trình học mới' : 'Quay lại Roadmap của tôi'}
                 </button>
               </div>
             ) : (
