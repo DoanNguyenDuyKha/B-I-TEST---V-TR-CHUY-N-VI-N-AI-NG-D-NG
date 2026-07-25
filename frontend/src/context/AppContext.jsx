@@ -216,7 +216,7 @@ export const AppProvider = ({ children }) => {
 
       if (res.ok) {
         const data = await res.json();
-        setUser(data);
+        // Do not auto login
         fetchStudents();
         return { success: true, user: data };
       } else {
@@ -239,7 +239,6 @@ export const AppProvider = ({ children }) => {
       classification: null,
       placementTestDone: false
     };
-    setUser(newUser);
     if (role === 'Student' && !students.some(s => s.username === username)) {
       setStudents(prev => [...prev, {
         ...newUser,

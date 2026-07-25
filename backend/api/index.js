@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { User, Lesson, Submission } from './models.js';
+import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion } from './gemini.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -308,7 +309,7 @@ app.post('/api/placement-test', async (req, res) => {
   }
 
   try {
-    const correctKeys = { q1: "B", q2: "A", q3: "C", q4: "B", q5: "D" };
+    const correctKeys = { q1: "B", q2: "A", q3: "C", q4: "B", q5: "D", q6: "A", q7: "C", q8: "B", q9: "D", q10: "B" };
     let quizScore = 0;
     let totalQuiz = Object.keys(correctKeys).length;
 
@@ -320,14 +321,14 @@ app.post('/api/placement-test', async (req, res) => {
       });
     }
 
-    const essayEval = evaluateWriting(essayText || "", "Placement");
+    const essayEval = await aiEvaluateWriting(essayText || "", "Placement");
 
     let classification = "Intermediate";
     const finalEssayScore = essayEval.score;
 
-    if (quizScore >= 4 && finalEssayScore >= 7.5) {
+    if (quizScore >= 8 && finalEssayScore >= 7.5) {
       classification = "Advanced";
-    } else if (quizScore <= 2 && finalEssayScore <= 5.0) {
+    } else if (quizScore <= 4 && finalEssayScore <= 5.0) {
       classification = "Basic";
     } else {
       classification = "Intermediate";
@@ -377,7 +378,7 @@ app.post('/api/essay-grade', async (req, res) => {
     const lesson = await Lesson.findById(lessonId);
     const targetLevel = lesson ? lesson.level : "Intermediate";
 
-    const evaluation = evaluateWriting(essayText, targetLevel);
+    const evaluation = await aiEvaluateWriting(essayText, targetLevel);
 
     // Save submission
     const newSubmission = new Submission({
@@ -487,6 +488,50 @@ app.post('/api/generate-lesson', async (req, res) => {
       message: "Lesson generated and saved to MongoDB successfully!",
       lesson: obj
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 8. GENERATE PROGRESS TEST FOR PROMOTION
+app.get('/api/progress-test', async (req, res) => {
+  const { level } = req.query;
+  if (!level) return res.status(400).json({ error: "Level is required." });
+  try {
+    const test = await aiGenerateProgressTest(level);
+    res.json(test);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 9. SUBMIT PROGRESS TEST & ASSESS PROMOTION
+app.post('/api/progress-test/submit', async (req, res) => {
+  const { username, quizScore, essayText, currentLevel } = req.body;
+  if (!username || quizScore === undefined || !essayText || !currentLevel) {
+    return res.status(400).json({ error: "Username, quizScore, essayText, and currentLevel are required." });
+  }
+  try {
+    const result = await aiEvaluatePromotion(quizScore, essayText, currentLevel);
+    
+    // Save placement test essay as submission
+    const progressSub = new Submission({
+      username,
+      lessonId: `progress-test-${currentLevel.toLowerCase()}`,
+      essayText,
+      evaluation: {
+        score: result.decision === 'Promoted' ? 8.5 : 5.5,
+        feedback: result.explanation,
+        improvedText: essayText
+      }
+    });
+    await progressSub.save();
+
+    if (result.decision === 'Promoted') {
+      await User.findOneAndUpdate({ username }, { classification: result.newLevel });
+    }
+
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

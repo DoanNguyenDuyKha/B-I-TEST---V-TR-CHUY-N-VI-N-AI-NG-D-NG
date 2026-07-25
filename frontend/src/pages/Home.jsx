@@ -62,10 +62,16 @@ export default function Home() {
     });
 
     if (res.success) {
-      setSuccessMsg('Đăng ký tài khoản thành công! Đang chuyển hướng làm bài test...');
+      setSuccessMsg('Đăng ký tài khoản thành công! Vui lòng dùng tài khoản mới này để đăng nhập.');
+      setPassword('');
+      setFullName('');
+      setEmail('');
+      setPhone('');
+      setDob('');
       setTimeout(() => {
-        navigate('/placement-test');
-      }, 1500);
+        setActiveTab('login');
+        setSuccessMsg('');
+      }, 2000);
     } else {
       setErrorMsg(res.error || 'Đăng ký tài khoản thất bại.');
     }

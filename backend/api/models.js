@@ -13,17 +13,19 @@ const UserSchema = new mongoose.Schema({
   placementTestDone: { type: Boolean, default: false }
 }, { timestamps: true });
 
+const VocabularySchema = new mongoose.Schema({
+  word: { type: String, required: true },
+  ipa: { type: String },
+  type: { type: String },
+  meaning: { type: String },
+  example: { type: String }
+}, { _id: false });
+
 const LessonSchema = new mongoose.Schema({
   level: { type: String, required: true, enum: ['Basic', 'Intermediate', 'Advanced'] },
   title: { type: String, required: true },
   description: { type: String },
-  vocabulary: [{
-    word: String,
-    ipa: String,
-    type: String,
-    meaning: String,
-    example: String
-  }],
+  vocabulary: [VocabularySchema],
   grammar: {
     point: String,
     explanation: String,

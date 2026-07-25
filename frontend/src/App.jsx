@@ -63,10 +63,18 @@ function MainApp() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col container mx-auto">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/placement-test" element={user ? <PlacementTest /> : <Navigate to="/" />} />
-          <Route path="/student" element={user ? <StudentDashboard /> : <Navigate to="/" />} />
-          <Route path="/admin" element={user && user.role === 'Admin' ? <AdminDashboard /> : <Navigate to="/" />} />
+          <Route path="/" element={
+            !user ? <Home /> : user.role === 'Admin' ? <Navigate to="/admin" /> : user.placementTestDone ? <Navigate to="/student" /> : <Navigate to="/placement-test" />
+          } />
+          <Route path="/placement-test" element={
+            !user ? <Navigate to="/" /> : user.role === 'Admin' ? <Navigate to="/admin" /> : user.placementTestDone ? <Navigate to="/student" /> : <PlacementTest />
+          } />
+          <Route path="/student" element={
+            !user ? <Navigate to="/" /> : user.role === 'Admin' ? <Navigate to="/admin" /> : !user.placementTestDone ? <Navigate to="/placement-test" /> : <StudentDashboard />
+          } />
+          <Route path="/admin" element={
+            user && user.role === 'Admin' ? <AdminDashboard /> : <Navigate to="/" />
+          } />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
