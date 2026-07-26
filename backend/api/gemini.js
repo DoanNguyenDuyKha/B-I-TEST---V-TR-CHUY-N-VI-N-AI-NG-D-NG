@@ -210,3 +210,32 @@ export async function aiEvaluatePromotion(quizScore, essayText, currentLevel) {
     return { decision, newLevel, explanation };
   }
 }
+
+// 4. AI LESSON ASSISTANT CHAT
+export async function aiLessonChat(message, lessonContext) {
+  const systemInstruction = "You are a friendly and helpful English tutor. The student is asking a question about a lesson. You must explain clearly, politely, and use Vietnamese for explanations but provide English examples.";
+  const prompt = `Student Question: "${message}"
+  Lesson Context:
+  - Title: ${lessonContext.title}
+  - Level: ${lessonContext.level}
+  - Grammar Point: ${lessonContext.grammarPoint}
+  - Vocabulary Words: ${lessonContext.vocabulary}`;
+  try {
+    return await callGemini(prompt, systemInstruction);
+  } catch (error) {
+    return `[Trợ lý Offline] Rất tiếc, máy chủ AI đang bận. Câu trả lời gợi ý cho câu hỏi của bạn là: Hãy tập trung ôn luyện từ vựng và cấu trúc ngữ pháp có trong bài học!`;
+  }
+}
+
+// 5. AI SPEAKING SIMULATOR CHAT
+export async function aiSpeakingChat(message, history) {
+  const systemInstruction = "You are an English conversation partner. Conduct a simulated speaking chat. Speak in natural English. For every response, you must structure it in two parts: first, a short correction/feedback on the student's grammar/word choice if any (marked with 'Feedback:'), and second, your reply continuing the conversation (marked with 'Reply:'). Respond concisely in under 80 words total.";
+  const prompt = `Student Message: "${message}"
+  Previous Conversation History:
+  ${history.map(h => `${h.sender === 'user' ? 'Student' : 'AI'}: ${h.text}`).join('\n')}`;
+  try {
+    return await callGemini(prompt, systemInstruction);
+  } catch (error) {
+    return `Feedback: [Offline Mode] Your sentence is fine!\nReply: That sounds interesting! Can you tell me more about it?`;
+  }
+}

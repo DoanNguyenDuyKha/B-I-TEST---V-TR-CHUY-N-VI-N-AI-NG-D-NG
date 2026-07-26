@@ -39,16 +39,120 @@ export default function StudentDashboard() {
   // Phase of progress test result: 'review' (review mcq & essay feedback first) or 'result' (show congratulatory/retention screen)
   const [progressPhase, setProgressPhase] = useState('review');
 
+  // Speaking Simulator states
+  const [isSpeakingMode, setIsSpeakingMode] = useState(false);
+  const [speakingTopic, setSpeakingTopic] = useState("Introduce Yourself");
+  const [speakingInput, setSpeakingInput] = useState("");
+  const [speakingChatHistory, setSpeakingChatHistory] = useState([]);
+  const [speakingSubmitting, setSpeakingSubmitting] = useState(false);
+
+  // Lesson chat states
+  const [lessonInput, setLessonInput] = useState("");
+  const [lessonChatHistory, setLessonChatHistory] = useState([
+    { sender: "ai", text: "Chào bạn! Tôi là Trợ lý Bài học AI. Bạn có thắc mắc gì về cấu trúc ngữ pháp, từ vựng hoặc bài đọc hiểu này không?" }
+  ]);
+  const [lessonChatSubmitting, setLessonChatSubmitting] = useState(false);
+
+  const handleRequestSpeakingMode = (topicName = "Introduce Yourself") => {
+    setIsSpeakingMode(true);
+    setSelectedLesson(null);
+    setIsTakingProgressTest(false);
+    setSpeakingTopic(topicName);
+    
+    const greetings = {
+      "Introduce Yourself": "Hello! I am your AI Speaking Partner. Let's practice introducing yourself in English. What is your name, age, and your hobby?",
+      "Job Interview": "Welcome to the tech company job interview simulator. Can you tell me about yourself and why you want to apply for this job in English?",
+      "Coffee Shop": "Hi there! Welcome to the Coffee Shop. What would you like to order today, and how is your weekend going?"
+    };
+
+    setSpeakingChatHistory([
+      { sender: "ai", text: greetings[topicName] || greetings["Introduce Yourself"], feedback: "" }
+    ]);
+  };
+
+  const handleSendSpeakingMessage = async () => {
+    if (!speakingInput.trim() || speakingSubmitting) return;
+    const studentMessage = speakingInput;
+    setSpeakingInput("");
+    setSpeakingChatHistory(prev => [...prev, { sender: "user", text: studentMessage }]);
+    setSpeakingSubmitting(true);
+
+    try {
+      const res = await fetch('http://localhost:3001/api/speaking-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: studentMessage,
+          history: speakingChatHistory
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        let feedback = "";
+        let reply = data.reply;
+        if (data.reply.includes("Feedback:") && data.reply.includes("Reply:")) {
+          const parts = data.reply.split("Reply:");
+          feedback = parts[0].replace("Feedback:", "").trim();
+          reply = parts[1].trim();
+        } else if (data.reply.includes("Feedback:")) {
+          feedback = data.reply.replace("Feedback:", "").trim();
+          reply = "";
+        }
+        setSpeakingChatHistory(prev => [...prev, { sender: "ai", text: reply || data.reply, feedback }]);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSpeakingSubmitting(false);
+    }
+  };
+
+  const handleSendLessonChatMessage = async () => {
+    if (!lessonInput.trim() || lessonChatSubmitting) return;
+    const msg = lessonInput;
+    setLessonInput("");
+    setLessonChatHistory(prev => [...prev, { sender: "user", text: msg }]);
+    setLessonChatSubmitting(true);
+
+    try {
+      const res = await fetch('http://localhost:3001/api/ai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: msg,
+          lessonContext: {
+            title: selectedLesson.title,
+            level: selectedLesson.level,
+            grammarPoint: selectedLesson.grammar?.point || "",
+            vocabulary: selectedLesson.vocabulary?.map(v => v.word).join(", ") || ""
+          }
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLessonChatHistory(prev => [...prev, { sender: "ai", text: data.reply }]);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLessonChatSubmitting(false);
+    }
+  };
+
   const currentStudentData = students.find(s => s.username === user?.username);
   const matchedLessons = lessons.filter(l => l.level === user?.classification);
 
   const handleOpenLesson = (lesson) => {
     setIsTakingProgressTest(false);
+    setIsSpeakingMode(false);
     setSelectedLesson(lesson);
     setEssayText('');
     setQuizAnswers({});
     setQuizSubmitted(false);
     setGradingResult(null);
+    setLessonChatHistory([
+      { sender: "ai", text: `Chào bạn! Tôi là Trợ lý Bài học AI. Bạn có thắc mắc gì về cấu trúc ngữ pháp, từ vựng hoặc bài đọc hiểu của bài "${lesson.title}" không?` }
+    ]);
 
     // Look for previous submission
     const prevSub = currentStudentData?.submissions?.find(sub => sub.lessonId === lesson.id);
@@ -321,6 +425,28 @@ export default function StudentDashboard() {
           })()}
         </div>
 
+        {/* AI Speaking Simulator Box */}
+        <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg space-y-4">
+          <div>
+            <h4 className="font-bold text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-indigo-400 animate-pulse" />
+              🗣️ Luyện Giao Tiếp AI
+            </h4>
+            <p className="text-[10px] text-slate-400 mt-1">Luyện hội thoại trực tiếp với AI để cải thiện phản xạ bản xứ.</p>
+          </div>
+
+          <button
+            onClick={() => handleRequestSpeakingMode()}
+            className={`w-full font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 border ${
+              isSpeakingMode
+                ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                : 'bg-slate-900 text-indigo-400 border-indigo-500/20 hover:border-indigo-500/40 hover:bg-slate-800'
+            }`}
+          >
+            Bắt đầu luyện giao tiếp
+          </button>
+        </div>
+
         {/* Learning Roadmap */}
         <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg space-y-4">
           <div>
@@ -372,7 +498,84 @@ export default function StudentDashboard() {
 
       {/* Main Content Area */}
       <div className="lg:col-span-2">
-        {isTakingProgressTest ? (
+        {isSpeakingMode ? (
+          /* Speaking simulator view */
+          <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg flex flex-col h-[650px] relative overflow-hidden">
+            <div className="border-b border-slate-800 pb-4 flex justify-between items-center shrink-0">
+              <div>
+                <h3 className="font-extrabold text-white text-lg flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-indigo-400" />
+                  AI Speaking Partner ({speakingTopic})
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">Thực hành hội thoại tự nhiên & nhận đánh giá ngữ pháp từ AI thời gian thực</p>
+              </div>
+              
+              <div className="flex gap-2">
+                {["Introduce Yourself", "Job Interview", "Coffee Shop"].map(topic => (
+                  <button
+                    key={topic}
+                    onClick={() => handleRequestSpeakingMode(topic)}
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-all ${
+                      speakingTopic === topic
+                        ? 'bg-indigo-600 border-indigo-500 text-white'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {topic === 'Introduce Yourself' ? 'Giới thiệu' : topic === 'Job Interview' ? 'Phỏng vấn' : 'Quán Cafe'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Chat message list */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
+              {speakingChatHistory.map((chat, idx) => (
+                <div key={idx} className={`flex flex-col ${chat.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className={`max-w-[80%] rounded-2xl p-4 text-xs ${
+                    chat.sender === 'user'
+                      ? 'bg-indigo-600 text-white rounded-br-none'
+                      : 'bg-slate-950 text-slate-200 rounded-bl-none border border-slate-900'
+                  }`}>
+                    {chat.text}
+                  </div>
+                  {chat.feedback && (
+                    <div className="mt-1.5 max-w-[85%] bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl p-3 text-[11px] leading-relaxed flex gap-2">
+                      <span className="font-bold">💡 Feedback:</span>
+                      <p>{chat.feedback}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {speakingSubmitting && (
+                <div className="flex justify-start">
+                  <div className="bg-slate-950 border border-slate-900 rounded-2xl p-3.5 text-xs text-slate-400 flex items-center gap-2">
+                    <Loader2 className="w-3.5 h-3.5 text-indigo-400 animate-spin" />
+                    <span>AI Speaking Partner đang viết phản hồi...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Chat Input */}
+            <div className="border-t border-slate-800 pt-4 flex gap-2 shrink-0">
+              <input
+                type="text"
+                value={speakingInput}
+                onChange={(e) => setSpeakingInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendSpeakingMessage()}
+                placeholder="Trả lời bằng tiếng Anh tại đây..."
+                className="flex-1 bg-slate-900 border border-slate-700/60 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-indigo-500"
+              />
+              <button
+                onClick={handleSendSpeakingMessage}
+                disabled={speakingSubmitting || !speakingInput.trim()}
+                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all"
+              >
+                Gửi <Send className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        ) : isTakingProgressTest ? (
           /* Taking Progress Test (AI Generated) */
           <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg space-y-6">
             <div className="border-b border-slate-800 pb-4 flex justify-between items-center">
@@ -791,6 +994,56 @@ export default function StudentDashboard() {
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* 5. AI Lesson Assistant Q&A Chat */}
+            <div className="space-y-4 border-t border-slate-800 pt-6">
+              <h3 className="text-lg font-bold text-indigo-300 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-indigo-400" />
+                5. Trợ Lý Học Tập AI (Hỏi Đáp 24/7)
+              </h3>
+              <div className="bg-slate-950 rounded-xl border border-slate-900 p-4 flex flex-col h-[320px]">
+                {/* Chat window */}
+                <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
+                  {lessonChatHistory.map((chat, idx) => (
+                    <div key={idx} className={`flex ${chat.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed ${
+                        chat.sender === 'user'
+                          ? 'bg-indigo-600 text-white rounded-tr-none'
+                          : 'bg-slate-900 text-slate-350 rounded-tl-none border border-slate-800'
+                      }`}>
+                        {chat.text}
+                      </div>
+                    </div>
+                  ))}
+                  {lessonChatSubmitting && (
+                    <div className="flex justify-start">
+                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-[11px] text-slate-400 flex items-center gap-1.5">
+                        <Loader2 className="w-3.5 h-3.5 text-indigo-400 animate-spin" />
+                        <span>AI đang soạn câu trả lời...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Send form */}
+                <div className="flex gap-2 border-t border-slate-900 pt-3">
+                  <input
+                    type="text"
+                    value={lessonInput}
+                    onChange={(e) => setLessonInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendLessonChatMessage()}
+                    placeholder="Hỏi AI bất kỳ điều gì về bài học này (ví dụ: giải thích từ vựng, đặt câu ví dụ)..."
+                    className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-indigo-500"
+                  />
+                  <button
+                    onClick={handleSendLessonChatMessage}
+                    disabled={lessonChatSubmitting || !lessonInput.trim()}
+                    className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1 transition-all"
+                  >
+                    Gửi
+                  </button>
+                </div>
               </div>
             </div>
 

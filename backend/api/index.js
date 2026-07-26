@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { User, Lesson, Submission } from './models.js';
-import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion } from './gemini.js';
+import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion, aiLessonChat, aiSpeakingChat } from './gemini.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -571,6 +571,32 @@ app.post('/api/progress-test/submit', async (req, res) => {
     }
 
     res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+// 10. AI LESSON ASSISTANT CHAT
+app.post('/api/ai-chat', async (req, res) => {
+  const { message, lessonContext } = req.body;
+  if (!message || !lessonContext) {
+    return res.status(400).json({ error: "Message and lessonContext are required." });
+  }
+  try {
+    const reply = await aiLessonChat(message, lessonContext);
+    res.json({ reply });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11. AI SPEAKING SIMULATOR CHAT
+app.post('/api/speaking-chat', async (req, res) => {
+  const { message, history } = req.body;
+  if (!message || !history) {
+    return res.status(400).json({ error: "Message and history are required." });
+  }
+  try {
+    const reply = await aiSpeakingChat(message, history);
+    res.json({ reply });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
