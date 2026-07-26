@@ -804,7 +804,30 @@ export default function StudentDashboard() {
                 >
                   {progressSubmitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate            {/* Tabs Selector for Separation of Study and Tests */}
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Gemini AI đang đánh giá bài thi nâng lớp...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Nộp bài thi cho AI đánh giá nâng cấp
+                    </>
+                  )}
+                </button>
+
+              </div>
+            )}
+          </div>
+        ) : selectedLesson ? (
+          /* Normal Lesson content view */
+          <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg space-y-6">
+            <div className="border-b border-slate-800 pb-4">
+              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Lộ trình học tập thích ứng</span>
+              <h2 className="text-xl font-extrabold text-white mt-1">{selectedLesson.title}</h2>
+              <p className="text-xs text-slate-400 mt-1">{selectedLesson.description}</p>
+            </div>
+
+            {/* Tabs Selector for Separation of Study and Tests */}
             <div className="flex gap-2 border-b border-slate-200 pb-3 shrink-0">
               <button
                 onClick={() => setLessonTab('study')}
