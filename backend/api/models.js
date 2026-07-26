@@ -26,6 +26,7 @@ const LessonSchema = new mongoose.Schema({
   username: { type: String, default: null },
   title: { type: String, required: true },
   description: { type: String },
+  studyTime: { type: String, default: "45 phút" },
   vocabulary: [VocabularySchema],
   grammar: {
     point: String,

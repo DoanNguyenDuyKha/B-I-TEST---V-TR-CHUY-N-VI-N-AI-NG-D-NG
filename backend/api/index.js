@@ -172,15 +172,41 @@ function evaluateWriting(text, levelGoal) {
   };
 }
 
-// 1. GET ALL LESSONS
+// 1. GET ALL LESSONS (Supports Username Query and On-the-fly AI Curriculum Generation)
 app.get('/api/lessons', async (req, res) => {
   try {
-    const { level } = req.query;
-    let query = {};
-    if (level) {
-      query.level = level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+    const { level, username } = req.query;
+    let list = [];
+    if (username) {
+      list = await Lesson.find({ username });
+      
+      // Auto-trigger custom lessons generation for existing users who already completed the test
+      if (list.length === 0) {
+        const student = await User.findOne({ username });
+        if (student && student.placementTestDone) {
+          console.log(`Generating on-the-fly custom lessons for existing user: ${username}`);
+          const target = student.target || "General English";
+          const classif = student.classification || "Intermediate";
+          const customLessons = await aiGenerateCustomCurriculum(classif, target);
+          if (customLessons && customLessons.length > 0) {
+            const prepared = customLessons.map(l => {
+              l.username = username;
+              return l;
+            });
+            list = await Lesson.insertMany(prepared);
+          }
+        }
+      }
     }
-    const list = await Lesson.find(query);
+
+    if (list.length === 0) {
+      let query = { username: null };
+      if (level) {
+        query.level = level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+      }
+      list = await Lesson.find(query);
+    }
+
     // Map _id to id for frontend compatibility
     const mapped = list.map(l => {
       const obj = l.toObject();

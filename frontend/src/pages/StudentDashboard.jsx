@@ -518,7 +518,14 @@ export default function StudentDashboard() {
                     }`}>
                       Bài {idx + 1}: {lesson.title}
                     </h5>
-                    <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{lesson.description}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-[10px] text-slate-500 line-clamp-1 flex-1">{lesson.description}</p>
+                      {lesson.studyTime && (
+                        <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 shrink-0 font-semibold">
+                          ⏱️ {lesson.studyTime}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -821,10 +828,20 @@ export default function StudentDashboard() {
         ) : selectedLesson ? (
           /* Normal Lesson content view */
           <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg space-y-6">
-            <div className="border-b border-slate-800 pb-4">
-              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Lộ trình học tập thích ứng</span>
-              <h2 className="text-xl font-extrabold text-white mt-1">{selectedLesson.title}</h2>
-              <p className="text-xs text-slate-400 mt-1">{selectedLesson.description}</p>
+            <div className="border-b border-slate-800 pb-4 flex justify-between items-start gap-4">
+              <div>
+                <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Lộ trình học tập thích ứng</span>
+                <h2 className="text-xl font-extrabold text-white mt-1">{selectedLesson.title}</h2>
+                <p className="text-xs text-slate-400 mt-1">{selectedLesson.description}</p>
+              </div>
+              {selectedLesson.studyTime && (
+                <div className="bg-indigo-50 border border-indigo-150 rounded-xl px-3 py-1.5 text-right shrink-0">
+                  <span className="block text-[8px] uppercase tracking-wider text-indigo-500 font-bold">Thời gian học gợi ý</span>
+                  <span className="text-xs font-bold text-indigo-850 flex items-center gap-1 mt-0.5 justify-end">
+                    ⏱️ {selectedLesson.studyTime}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Tabs Selector for Separation of Study and Tests */}
