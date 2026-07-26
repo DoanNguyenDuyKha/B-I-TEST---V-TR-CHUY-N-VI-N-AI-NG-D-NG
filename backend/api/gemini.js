@@ -307,3 +307,27 @@ export async function aiGenerateCustomCurriculum(classification, target) {
     return null;
   }
 }
+
+// 8. AI DYNAMIC GUIDANCE MESSAGE
+export async function aiGenerateStudentGuidance(studentInfo, lessonsList, completedCount) {
+  const systemInstruction = "You are a friendly and professional English academic counselor. You must greet the student in Vietnamese, summarize their progress, and encourage them to continue to their next lesson. Keep the response brief, warm, inspiring, and limited to 2-3 sentences.";
+  
+  const lessonsStatusStr = lessonsList.map((l, i) => `${i+1}. ${l.title}`).join('\n');
+  const nextLesson = lessonsList[completedCount] ? lessonsList[completedCount].title : "bài thi nâng hạng lớp";
+
+  const prompt = `Student Name: ${studentInfo.fullName || studentInfo.username}
+  Learning Target: ${studentInfo.target}
+  Current Level: ${studentInfo.classification}
+  Completed Lessons Count: ${completedCount} out of ${lessonsList.length}
+  Custom Lessons List:
+  ${lessonsStatusStr}
+  
+  Next target is: ${nextLesson}.
+  Write a friendly, polite, and encouraging message summarizing what they accomplished and motivating them to study the next step: "${nextLesson}".`;
+
+  try {
+    return await callGemini(prompt, systemInstruction);
+  } catch (error) {
+    return `Chào bạn! Bạn đã hoàn thành ${completedCount}/${lessonsList.length} bài học. Hãy tiếp tục cố gắng hoàn thành bài học tiếp theo "${nextLesson}" để tích lũy kiến thức vững chắc nhé!`;
+  }
+}

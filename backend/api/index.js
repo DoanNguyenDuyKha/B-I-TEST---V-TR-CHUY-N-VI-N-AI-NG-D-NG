@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { User, Lesson, Submission } from './models.js';
-import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion, aiLessonChat, aiSpeakingChat, aiGeneratePlacementTest, aiGenerateCustomCurriculum } from './gemini.js';
+import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion, aiLessonChat, aiSpeakingChat, aiGeneratePlacementTest, aiGenerateCustomCurriculum, aiGenerateStudentGuidance } from './gemini.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -317,6 +317,31 @@ app.get('/api/placement-test-questions', async (req, res) => {
     } else {
       res.json({ fallback: true });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4.6 GET STUDENT DYNAMIC Welcome / Guidance Banner (AI Counselor advice)
+app.get('/api/student-guidance', async (req, res) => {
+  const { username } = req.query;
+  if (!username) return res.status(400).json({ error: "Username is required." });
+
+  try {
+    const student = await User.findOne({ username });
+    if (!student) return res.status(404).json({ error: "Student not found." });
+
+    const lessonsList = await Lesson.find({ username });
+    const submissions = await Submission.find({ username });
+    const completedLessonIds = submissions
+      .filter(s => s.lessonId !== "placement-test" && !s.lessonId.startsWith("progress-test"))
+      .map(s => s.lessonId);
+    
+    const uniqueCompleted = [...new Set(completedLessonIds)];
+    const completedCount = uniqueCompleted.length;
+
+    const guidance = await aiGenerateStudentGuidance(student, lessonsList, completedCount);
+    res.json({ guidance });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
