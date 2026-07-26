@@ -266,7 +266,7 @@ export const AppProvider = ({ children }) => {
         const updatedUser = {
           ...user,
           classification: data.classification,
-          placementTestDone: true
+          placementTestDone: false
         };
         setUser(updatedUser);
 
@@ -304,22 +304,42 @@ export const AppProvider = ({ children }) => {
       const updatedUser = {
         ...user,
         classification,
-        placementTestDone: true
+        placementTestDone: false
       };
       setUser(updatedUser);
 
       setStudents(prev => prev.map(s => s.username === user.username ? {
         ...s,
         classification,
-        quizScore: "3/5",
+        quizScore: "8/10",
         essayText,
         essayScore: score,
-        feedback: `[Simulated Feedback] Evaluated locally. Your estimated score is ${score}/10. You have been placed in the ${classification} class.`,
+        feedback: "Local mock feedback for testing",
         submissions: []
       } : s));
 
-      return { classification };
+      return {
+        quizScore: "8/10",
+        classification,
+        essayEvaluation: {
+          score,
+          feedback: "Bài viết khá tốt. Hãy tiếp tục luyện tập để phát triển thêm vốn từ vựng học thuật.",
+          scores: { grammar: 7, vocabulary: 6, coherence: 7 }
+        },
+        questionsFeedback: [
+          { id: "q1", question: "Choose the correct sentence structure:", studentAnswer: "B", correctAnswer: "B", isCorrect: true, explanation: "Đáp án đúng là B: 'He doesn't like studying English at night'." }
+        ]
+      };
     }
+  };
+
+  // Complete Placement Review & Redirect to Student Page
+  const completePlacementReview = (classification) => {
+    setUser(prev => ({
+      ...prev,
+      classification,
+      placementTestDone: true
+    }));
   };
 
   // Submit Lesson Assignment Essay
@@ -434,6 +454,7 @@ export const AppProvider = ({ children }) => {
       submitAssignment,
       addLesson,
       updateStudentClassification,
+      completePlacementReview,
       logout,
       fetchLessons
     }}>

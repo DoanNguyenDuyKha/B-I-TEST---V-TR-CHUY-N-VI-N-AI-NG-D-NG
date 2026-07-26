@@ -4,7 +4,7 @@ import { AppContext } from '../context/AppContext';
 import { Sparkles, Brain, ClipboardCheck, ArrowRight, Loader2, BookOpen, CheckCircle, XCircle, ChevronRight, HelpCircle } from 'lucide-react';
 
 export default function PlacementTest() {
-  const { submitPlacementTest } = useContext(AppContext);
+  const { submitPlacementTest, completePlacementReview } = useContext(AppContext);
   const navigate = useNavigate();
   const [currentPart, setCurrentPart] = useState(1);
   const [quizAnswers, setQuizAnswers] = useState({
@@ -299,7 +299,10 @@ export default function PlacementTest() {
           </div>
 
           <button
-            onClick={() => navigate('/student')}
+            onClick={() => {
+              completePlacementReview(result.classification);
+              navigate('/student');
+            }}
             className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-black py-4 rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 group duration-200"
           >
             Bắt đầu học lộ trình của bạn ngay bây giờ
