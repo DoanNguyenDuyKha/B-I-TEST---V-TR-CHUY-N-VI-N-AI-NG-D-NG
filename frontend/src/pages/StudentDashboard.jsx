@@ -1167,8 +1167,8 @@ export default function StudentDashboard() {
             {/* Lessons Roadmap Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {lessons.map((lesson, idx) => {
-                const isCompleted = completedLessons.includes(lesson.id);
-                const isPreviousCompleted = idx === 0 || completedLessons.includes(lessons[idx - 1]?.id);
+                const isCompleted = currentStudentData?.submissions?.some(s => s.lessonId === lesson.id);
+                const isPreviousCompleted = idx === 0 || currentStudentData?.submissions?.some(s => s.lessonId === lessons[idx - 1]?.id);
                 const isSelected = selectedLesson?.id === lesson.id;
                 
                 return (
