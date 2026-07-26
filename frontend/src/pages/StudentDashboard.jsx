@@ -23,6 +23,17 @@ export default function StudentDashboard() {
   const [progressQuizAnswers, setProgressQuizAnswers] = useState({});
   const [progressEssayText, setProgressEssayText] = useState('');
   const [progressSubmitting, setProgressSubmitting] = useState(false);
+  const [studySchedule, setStudySchedule] = useState({
+    time: localStorage.getItem(`schedule_time_${user?.username}`) || '20:00',
+    days: localStorage.getItem(`schedule_days_${user?.username}`) || 'Thứ 2, 4, 6'
+  });
+  const [isEditingSchedule, setIsEditingSchedule] = useState(false);
+
+  const aiRecommendations = {
+    Basic: "Hãy tập trung học thuộc từ vựng cốt lõi của mỗi bài, luyện đặt câu đơn giản ở thì Hiện tại đơn. Hãy hoàn thành cả 3 bài học Cơ bản và dành tối thiểu 20 phút ôn luyện mỗi ngày.",
+    Intermediate: "Hãy rèn luyện sử dụng các liên từ chỉ quan hệ nhân quả/tương phản (although, because, whereas) trong bài viết luận. Hãy hoàn thành đầy đủ 3 bài học để sẵn sàng mở khóa thi thăng lớp Advanced.",
+    Advanced: "Tập trung cải thiện tính đa dạng từ vựng học thuật bằng cách dùng các từ đồng nghĩa nâng cao. Luyện cấu trúc câu đảo ngữ và giả định để chuẩn bị đạt band điểm tối đa."
+  };
   const [progressTestResult, setProgressTestResult] = useState(null);
   
   // Phase of progress test result: 'review' (review mcq & essay feedback first) or 'result' (show congratulatory/retention screen)
@@ -203,6 +214,70 @@ export default function StudentDashboard() {
           </div>
         </div>
 
+        {/* AI Lesson Recommendation Box */}
+        <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg space-y-3 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-violet-600/5 rounded-full blur-lg"></div>
+          <h4 className="font-bold text-white flex items-center gap-2 text-xs uppercase tracking-wider text-violet-400">
+            <Sparkles className="w-4 h-4 text-violet-400" />
+            AI Gợi Ý Lộ Trình
+          </h4>
+          <p className="text-xs text-slate-350 leading-relaxed italic">
+            "{aiRecommendations[user?.classification || 'Basic']}"
+          </p>
+        </div>
+
+        {/* Study Scheduler Box */}
+        <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg space-y-4">
+          <h4 className="font-bold text-white flex items-center gap-2 text-xs uppercase tracking-wider text-indigo-400">
+            📅 Lập Lịch Học Tập
+          </h4>
+          {isEditingSchedule ? (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Giờ học mỗi ngày</label>
+                <input
+                  type="time"
+                  value={studySchedule.time}
+                  onChange={(e) => setStudySchedule(prev => ({ ...prev, time: e.target.value }))}
+                  className="bg-slate-900 border border-slate-800 text-white rounded p-1.5 text-xs w-full focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Ngày trong tuần</label>
+                <input
+                  type="text"
+                  value={studySchedule.days}
+                  onChange={(e) => setStudySchedule(prev => ({ ...prev, days: e.target.value }))}
+                  placeholder="Ví dụ: Thứ 2, 4, 6"
+                  className="bg-slate-900 border border-slate-800 text-white rounded p-1.5 text-xs w-full focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  localStorage.setItem(`schedule_time_${user?.username}`, studySchedule.time);
+                  localStorage.setItem(`schedule_days_${user?.username}`, studySchedule.days);
+                  setIsEditingSchedule(false);
+                }}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 rounded text-[11px] transition-colors"
+              >
+                Lưu lịch học
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Bạn đã quy định lịch học tập vào lúc <strong className="text-indigo-400">{studySchedule.time}</strong> các ngày <strong className="text-indigo-400">{studySchedule.days}</strong> hàng tuần.
+              </p>
+              <button
+                onClick={() => setIsEditingSchedule(true)}
+                className="text-[10px] text-slate-500 hover:text-slate-350 underline font-semibold"
+              >
+                Thay đổi lịch học
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* AI Promotion Test Box */}
         <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg space-y-4">
           <div>
@@ -213,14 +288,37 @@ export default function StudentDashboard() {
             <p className="text-[10px] text-slate-400 mt-1">Yêu cầu AI tự động sinh bài Progress Test thích ứng theo trình độ hiện tại</p>
           </div>
 
-          <button
-            onClick={handleRequestProgressTest}
-            disabled={isTakingProgressTest || isGeneratingProgressTest}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-indigo-400 border border-indigo-500/20 hover:border-indigo-500/40 font-bold py-2 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2"
-          >
-            <GraduationCap className="w-4 h-4" />
-            Bắt đầu thi nâng lớp
-          </button>
+          {(() => {
+            const completedCount = matchedLessons.filter(l => 
+              currentStudentData?.submissions?.some(sub => sub.lessonId === l.id)
+            ).length;
+            const isUnlocked = matchedLessons.length > 0 && completedCount === matchedLessons.length;
+
+            return (
+              <div className="space-y-3">
+                {isUnlocked ? (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-lg text-xs text-emerald-400 flex gap-2">
+                    <CheckCircle className="w-4 h-4 shrink-0" />
+                    <span>🔓 Đã mở khóa: Bạn đã hoàn thành {completedCount}/{matchedLessons.length} bài học. Có thể thi nâng lớp!</span>
+                  </div>
+                ) : (
+                  <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-xs text-red-400 flex gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 animate-pulse" />
+                    <span>🔒 Đang khóa: Bạn mới hoàn thành {completedCount}/{matchedLessons.length} bài học. Hãy làm bài tập của tất cả bài học để mở khóa thi nâng lớp.</span>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleRequestProgressTest}
+                  disabled={!isUnlocked || isTakingProgressTest || isGeneratingProgressTest}
+                  className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900 text-indigo-400 border border-indigo-500/20 hover:border-indigo-500/40 font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2"
+                >
+                  <GraduationCap className="w-4 h-4" />
+                  Bắt đầu thi nâng lớp
+                </button>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Learning Roadmap */}
