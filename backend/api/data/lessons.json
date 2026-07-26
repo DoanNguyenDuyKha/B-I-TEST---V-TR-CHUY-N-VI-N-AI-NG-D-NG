@@ -58,19 +58,19 @@
     },
     "reading": {
       "title": "A Journey of Career Transition",
-      "content": "Minh has been a software QA tester for three years. However, last month, he decided to transition into an AI Developer. He has already completed two online courses on machine learning. Yesterday, he successfully deployed his first API on Vercel. Although he faced some minor configuration bugs, he fixed them quickly. He believes that continuous learning is the key to accomplishing career breakthroughs in the digital era.",
+      "content": "Minh has been a tour guide in Da Nang for three years. However, last month, he decided to transition into a coffee shop manager in Da Lat. He has already designed two signature drinks. Yesterday, he successfully opened his small shop in the valley. Although he faced some minor opening day difficulties, he fixed them quickly. He believes that passionate work is the key to accomplishing career happiness in life.",
       "questions": [
         {
           "id": "q1",
-          "question": "How long has Minh worked as a software QA tester?",
+          "question": "How long has Minh worked as a tour guide?",
           "options": ["For 2 years", "For 3 years", "For 1 month", "For 5 years"],
           "answer": "For 3 years"
         },
         {
           "id": "q2",
           "question": "What did Minh accomplish yesterday?",
-          "options": ["Completed a course", "Resigned from his job", "Deployed his first API on Vercel", "Learnt Python"],
-          "answer": "Deployed his first API on Vercel"
+          "options": ["Completed a trip", "Closed his shop", "Opened his small coffee shop in the valley", "Travelled to Da Lat"],
+          "answer": "Opened his small coffee shop in the valley"
         }
       ]
     },
