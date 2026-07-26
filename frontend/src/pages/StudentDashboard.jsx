@@ -1151,14 +1151,86 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-          </div>
         ) : (
-          <div className="glass p-12 rounded-xl border border-slate-700/50 shadow-lg text-center flex flex-col justify-center items-center h-full min-h-[400px]">
-            <BookOpen className="w-16 h-16 text-indigo-500/40 mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">Bắt đầu học tập thích ứng</h3>
-            <p className="text-sm text-slate-400 max-w-sm">
-              Chọn một bài học từ lộ trình học tập ở thanh bên trái hoặc bấm nút **"Bắt đầu thi nâng lớp"** bên dưới phần đánh giá AI để bắt đầu kiểm tra thăng hạng trình độ!
-            </p>
+          <div className="space-y-6">
+            {/* Header: Learning Path Roadmap */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
+              <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                🎯 Lộ Trình Học Tập Thích Ứng Của Bạn
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Dựa trên mục tiêu học tập <span className="text-indigo-400 font-bold">"{user?.target || 'General English'}"</span> và kết quả bài thi phân lớp của bạn, Gemini AI đã thiết kế riêng một lộ trình học tập tối ưu gồm 4 bài học lớn. Hãy học từng bài và làm bài trắc nghiệm Quiz để hoàn thành lộ trình!
+              </p>
+            </div>
+
+            {/* Lessons Roadmap Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {lessons.map((lesson, idx) => {
+                const isCompleted = completedLessons.includes(lesson.id);
+                const isPreviousCompleted = idx === 0 || completedLessons.includes(lessons[idx - 1]?.id);
+                const isSelected = selectedLesson?.id === lesson.id;
+                
+                return (
+                  <div
+                    key={lesson.id}
+                    onClick={() => handleOpenLesson(lesson)}
+                    className={`glass p-6 rounded-2xl border transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between h-[190px] group ${
+                      isSelected
+                        ? 'border-indigo-500 shadow-md shadow-indigo-600/10 scale-[1.01]'
+                        : isCompleted
+                        ? 'border-emerald-500/40 hover:border-emerald-500'
+                        : isPreviousCompleted
+                        ? 'border-slate-700/60 hover:border-indigo-500/60'
+                        : 'border-slate-800 opacity-60 hover:opacity-85'
+                    }`}
+                  >
+                    {/* Background badge number */}
+                    <div className="absolute -right-3 -top-3 text-7xl font-black text-slate-700/5 select-none font-mono">
+                      0{idx + 1}
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                          isCompleted
+                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                            : isPreviousCompleted
+                            ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+                            : 'bg-slate-850 border-slate-700 text-slate-500'
+                        }`}>
+                          {isCompleted ? '✓ ĐÃ HOÀN THÀNH' : isPreviousCompleted ? '▶ ĐANG HỌC' : '🔒 CHƯA MỞ KHÓA'}
+                        </span>
+                        
+                        {lesson.studyTime && (
+                          <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                            ⏱️ {lesson.studyTime}
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="font-extrabold text-white text-base group-hover:text-indigo-400 transition-colors line-clamp-1">
+                        {lesson.title}
+                      </h4>
+                      <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                        {lesson.description}
+                      </p>
+                    </div>
+
+                    <div className="border-t border-slate-800/80 pt-3 flex justify-between items-center mt-4">
+                      <span className="text-[10px] text-slate-500">
+                        {lesson.vocabulary?.length || 0} từ vựng • 1 chủ điểm ngữ pháp
+                      </span>
+                      <button className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${
+                        isCompleted
+                          ? 'bg-emerald-600/10 text-emerald-400 border border-emerald-500/20'
+                          : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'
+                      }`}>
+                        {isCompleted ? 'Học lại' : 'Học ngay'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
