@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { User, Lesson, Submission } from './models.js';
-import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion, aiLessonChat, aiSpeakingChat } from './gemini.js';
+import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion, aiLessonChat, aiSpeakingChat, aiGeneratePlacementTest } from './gemini.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -295,6 +295,28 @@ app.post('/api/students/update-level', async (req, res) => {
     );
     if (!student) return res.status(404).json({ error: "Student not found." });
     res.json(student);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4.5 GET TARGET-BASED PLACEMENT TEST QUESTIONS (AI Generated)
+app.get('/api/placement-test-questions', async (req, res) => {
+  const { username } = req.query;
+  if (!username) return res.status(400).json({ error: "Username is required." });
+
+  try {
+    const student = await User.findOne({ username });
+    if (!student) return res.status(404).json({ error: "Student not found." });
+
+    const target = student.target || "General English";
+    const test = await aiGeneratePlacementTest(target);
+
+    if (test) {
+      res.json(test);
+    } else {
+      res.json({ fallback: true });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

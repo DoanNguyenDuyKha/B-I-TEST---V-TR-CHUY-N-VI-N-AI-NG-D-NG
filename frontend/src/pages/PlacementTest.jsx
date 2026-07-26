@@ -1,10 +1,10 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { Sparkles, Brain, ClipboardCheck, ArrowRight, Loader2, BookOpen, CheckCircle, XCircle, ChevronRight, HelpCircle } from 'lucide-react';
 
 export default function PlacementTest() {
-  const { submitPlacementTest, completePlacementReview } = useContext(AppContext);
+  const { submitPlacementTest, completePlacementReview, user } = useContext(AppContext);
   const navigate = useNavigate();
   const [currentPart, setCurrentPart] = useState(1);
   const [quizAnswers, setQuizAnswers] = useState({
@@ -17,7 +17,11 @@ export default function PlacementTest() {
   // Phase of result display: 'review' (review questions first) or 'classification' (the final result)
   const [resultPhase, setResultPhase] = useState('review');
 
-  const quizQuestions = [
+  const [essayPrompt, setEssayPrompt] = useState("Hãy viết một đoạn văn ngắn (từ 50 - 100 từ) bằng tiếng Anh bày tỏ ý kiến của bạn về tầm quan trọng của việc học tiếng Anh trong cuộc sống hiện nay.");
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [fetchingTest, setFetchingTest] = useState(false);
+
+  const staticQuizQuestions = [
     {
       id: 'q1',
       question: "Choose the correct sentence structure:",
@@ -120,6 +124,60 @@ export default function PlacementTest() {
     }
   ];
 
+  useEffect(() => {
+    const fetchCustomTest = async () => {
+      if (!user) return;
+      setFetchingTest(true);
+      try {
+        const res = await fetch(`http://localhost:3001/api/placement-test-questions?username=${user.username}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && !data.fallback) {
+            const labels = ["A", "B", "C", "D"];
+            const mappedQuestions = data.questions.map(q => {
+              // Extract raw letter answer if AI returned full string or single letter
+              let finalAns = "A";
+              if (q.answer.length === 1) {
+                finalAns = q.answer.toUpperCase();
+              } else {
+                const foundIdx = q.options.findIndex(opt => opt.toLowerCase() === q.answer.toLowerCase() || opt.toLowerCase().includes(q.answer.toLowerCase()));
+                if (foundIdx > -1) {
+                  finalAns = labels[foundIdx];
+                }
+              }
+              return {
+                id: q.id,
+                question: q.question,
+                options: q.options.map((opt, oIdx) => ({
+                  label: `${labels[oIdx]}. ${opt}`,
+                  value: labels[oIdx]
+                })),
+                answer: finalAns
+              };
+            });
+
+            setQuizQuestions(mappedQuestions);
+            setEssayPrompt(data.essayPrompt);
+            
+            const initialAns = {};
+            mappedQuestions.forEach(q => {
+              initialAns[q.id] = '';
+            });
+            setQuizAnswers(initialAns);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch custom placement test, using static fallback", e);
+      } finally {
+        setFetchingTest(false);
+      }
+      // Fallback
+      setQuizQuestions(staticQuizQuestions);
+    };
+    fetchCustomTest();
+  }, [user]);
+
   const handleSelectQuiz = (questionId, value) => {
     setQuizAnswers(prev => ({ ...prev, [questionId]: value }));
   };
@@ -160,6 +218,16 @@ export default function PlacementTest() {
         return 'Lộ trình cơ bản được thiết kế riêng giúp bạn xây dựng lại nền móng vững chắc: học động từ To Be, thì hiện tại đơn, tích lũy từ vựng chỉ người, vật, nghề nghiệp và thực hành viết câu ngắn chuẩn chỉnh.';
     }
   };
+
+  if (fetchingTest) {
+    return (
+      <div className="flex-1 flex flex-col justify-center items-center py-20 space-y-4">
+        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+        <h3 className="text-white font-bold text-lg">AI đang thiết kế đề thi cho mục tiêu "{user?.target || 'Học giao tiếp'}"...</h3>
+        <p className="text-xs text-slate-400">Hệ thống đang soạn đề thi 10 câu trắc nghiệm & đề tự luận thích ứng theo mục đích học tập của bạn.</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -385,11 +453,8 @@ export default function PlacementTest() {
               <BookOpen className="w-4 h-4" />
               Đoạn văn đọc hiểu & Đề bài tự luận
             </h4>
-            <p className="text-xs text-slate-300 leading-relaxed italic">
-              "In today's globalized economy, English has undeniably established itself as the global lingua franca. In fields ranging from international trade to technological innovation, proficiency in English opens up massive opportunities for career growth. However, many experts debate whether standard grammar rules are more important than real-world conversational communication skills when learning English."
-            </p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2">
-              Đề bài: Hãy viết một đoạn văn ngắn (từ 50 - 100 từ) bằng tiếng Anh bày tỏ ý kiến của bạn về tầm quan trọng của việc học tiếng Anh trong cuộc sống hiện nay.
+            <p className="text-xs text-slate-300 leading-relaxed italic bg-slate-900/30 p-3 rounded border border-slate-800/50">
+              {essayPrompt}
             </p>
           </div>
 

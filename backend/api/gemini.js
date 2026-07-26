@@ -239,3 +239,23 @@ export async function aiSpeakingChat(message, history) {
     return `Feedback: [Offline Mode] Your sentence is fine!\nReply: That sounds interesting! Can you tell me more about it?`;
   }
 }
+
+// 6. AI GENERATE PLACEMENT TEST (10 Quizzes + Essay Prompt based on target)
+export async function aiGeneratePlacementTest(target) {
+  const systemInstruction = "You are an English test generator. You must always output responses in a strict JSON object representing a placement test matching the student's learning target. The JSON must contain: questions (a list of 10 multiple-choice questions, each containing fields: id, question, options as array of 4 strings, answer as the exact correct option string, and explanation as a string in Vietnamese explaining why this answer is correct) and essayPrompt (string).";
+
+  const prompt = `Create a custom placement test for a student whose learning target is "${target}".
+  The test must include:
+  1. 10 multiple-choice grammar and vocabulary questions targeted specifically for their target "${target}". For example, if target is IELTS, use IELTS-style academic vocab/grammar. If TOEIC, use business/office contexts. If Communication (Giao tiếp), use daily conversation.
+  2. 1 reading & essay writing prompt suited for target "${target}".
+  Return only the JSON with keys: questions (array of 10 objects containing: id, question, options, answer, explanation) and essayPrompt (string).`;
+
+  try {
+    const rawResult = await callGemini(prompt, systemInstruction);
+    const cleaned = cleanJsonString(rawResult);
+    return JSON.parse(cleaned);
+  } catch (error) {
+    console.warn("Gemini Placement Test Generation failed, using static fallback for target:", target);
+    return null;
+  }
+}
