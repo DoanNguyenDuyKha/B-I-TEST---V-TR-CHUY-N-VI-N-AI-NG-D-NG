@@ -278,7 +278,7 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="flex-1 max-w-6xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="flex-1 w-full py-4 grid grid-cols-1 lg:grid-cols-4 gap-8">
       
       {/* Sidebar Column */}
       <div className="space-y-6">
@@ -497,7 +497,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Main Content Area */}
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-3">
         {isSpeakingMode ? (
           /* Speaking simulator view */
           <div className="glass p-6 rounded-xl border border-slate-700/50 shadow-lg flex flex-col h-[650px] relative overflow-hidden">

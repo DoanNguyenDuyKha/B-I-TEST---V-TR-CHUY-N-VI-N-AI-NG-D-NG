@@ -14,25 +14,35 @@ h1, h2, h3, h4, h5, h6 {
 
 body {
   margin: 0;
-  background-color: #f8fafc;
+  background-color: #f1f5f9;
   color: #0f172a;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Glassmorphism Styles (Light Mode) */
+/* Premium Light Mode Card & Container Styles */
 .glass {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+}
+
+.glass h1, .glass h2, .glass h3, .glass h4, .glass h5, .glass h6 {
+  color: #0f172a !important;
+}
+
+.glass p, .glass label {
+  color: #475569 !important;
+}
+
+.glass span:not(.text-indigo-400):not(.text-emerald-400):not(.text-red-400):not(.text-amber-400):not(.text-transparent):not(.bg-clip-text) {
+  color: #475569;
 }
 
 .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(99, 102, 241, 0.5);
-  box-shadow: 0 10px 40px rgba(99, 102, 241, 0.1);
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
 }
 
@@ -52,7 +62,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6366f1;
+  background: #94a3b8;
 }
 
 /* Animation utilities */
@@ -63,7 +73,7 @@ body {
   }
   50% {
     opacity: 0.8;
-    filter: drop-shadow(0 0 25px rgba(139, 92, 246, 0.2));
+    filter: drop-shadow(0 0 25px rgba(139, 92, 246, 0.15));
   }
 }
 

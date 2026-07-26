@@ -242,7 +242,7 @@ export default function PlacementTest() {
   // Result phase 1: Review questions
   if (result && resultPhase === 'review') {
     return (
-      <div className="flex-1 max-w-3xl w-full mx-auto px-4 py-8 space-y-8">
+      <div className="flex-1 w-full px-4 py-8 space-y-8">
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-extrabold text-white flex items-center justify-center gap-2">
             <ClipboardCheck className="text-indigo-400 w-7 h-7" />
@@ -341,7 +341,7 @@ export default function PlacementTest() {
   // Result phase 2: Dedicated Classification Screen
   if (result && resultPhase === 'classification') {
     return (
-      <div className="flex-1 max-w-2xl w-full mx-auto px-4 py-16">
+      <div className="flex-1 w-full px-4 py-16">
         <div className="glass p-10 rounded-3xl border border-slate-700/50 text-center space-y-8 shadow-2xl relative overflow-hidden">
           {/* Confetti-like design element */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -z-10"></div>
@@ -382,7 +382,7 @@ export default function PlacementTest() {
   }
 
   return (
-    <div className="flex-1 max-w-3xl w-full mx-auto px-4 py-12 space-y-8">
+    <div className="flex-1 w-full px-4 py-12 space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-extrabold text-white flex items-center justify-center gap-2">
