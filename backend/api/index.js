@@ -554,12 +554,19 @@ app.post('/api/generate-lesson', async (req, res) => {
   }
 });
 
-// 8. GENERATE PROGRESS TEST FOR PROMOTION
+// 8. GENERATE PROGRESS TEST FOR PROMOTION (Target-aligned 10 MCQs)
 app.get('/api/progress-test', async (req, res) => {
   const { level } = req.query;
   if (!level) return res.status(400).json({ error: "Level is required." });
   try {
-    const test = await aiGenerateProgressTest(level);
+    const levelLessons = await Lesson.find({ level });
+    const lessonsSummary = levelLessons.map((l, idx) => {
+      const vocabStr = l.vocabulary?.map(v => v.word).join(', ') || "";
+      const grammarStr = l.grammar?.point || "";
+      return `Lesson ${idx + 1}: Title: "${l.title}", Grammar Point: "${grammarStr}", Vocabulary Words: [${vocabStr}]`;
+    }).join('\n');
+
+    const test = await aiGenerateProgressTest(level, lessonsSummary);
     res.json(test);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -596,6 +603,8 @@ app.post('/api/progress-test/submit', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
 // 10. AI LESSON ASSISTANT CHAT
 app.post('/api/ai-chat', async (req, res) => {
   const { message, lessonContext } = req.body;

@@ -108,7 +108,7 @@ async function runTests() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: testStudentUsername,
-        quizScore: 5, // 5/5 correct answers
+        quizScore: 10, // 10/10 correct answers
         essayText: "Learning English is crucial for my future. I want to build a career in software engineering and connect with global teams.",
         currentLevel: placementResult.classification
       })

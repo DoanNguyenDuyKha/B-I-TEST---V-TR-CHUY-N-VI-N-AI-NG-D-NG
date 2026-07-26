@@ -723,7 +723,7 @@ export default function StudentDashboard() {
                 
                 {/* 5 Multiple Choice */}
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Phần 1: Trắc nghiệm kiến thức (5 câu)</h4>
+                  <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Phần 1: Trắc nghiệm kiến thức (10 câu)</h4>
                   {progressTest?.questions?.map((q, idx) => (
                     <div key={q.id} className="p-4 bg-slate-900/40 rounded-xl border border-slate-800/80 space-y-2">
                       <p className="text-xs font-bold text-slate-200">{idx + 1}. {q.question}</p>
@@ -767,7 +767,7 @@ export default function StudentDashboard() {
 
                 <button
                   onClick={handleSubmitProgressTest}
-                  disabled={progressSubmitting || Object.keys(progressQuizAnswers).length < 5 || progressEssayText.trim().split(/\s+/).filter(Boolean).length < 10}
+                  disabled={progressSubmitting || Object.keys(progressQuizAnswers).length < 10 || progressEssayText.trim().split(/\s+/).filter(Boolean).length < 10}
                   className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 disabled:opacity-40 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-2"
                 >
                   {progressSubmitting ? (

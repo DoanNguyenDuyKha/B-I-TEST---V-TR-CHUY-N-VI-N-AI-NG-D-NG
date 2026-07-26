@@ -57,7 +57,7 @@ function MainApp() {
   const { user } = useContext(AppContext);
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div className="min-h-screen bg-[#f1f5f9] text-slate-800 flex flex-col selection:bg-indigo-500/10 selection:text-indigo-900">
       <Header />
       
       {/* Main Content Area */}
