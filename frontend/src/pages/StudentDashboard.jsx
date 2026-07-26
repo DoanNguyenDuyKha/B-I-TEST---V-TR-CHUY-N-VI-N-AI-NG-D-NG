@@ -140,7 +140,7 @@ export default function StudentDashboard() {
   };
 
   const currentStudentData = students.find(s => s.username === user?.username);
-  const matchedLessons = lessons.filter(l => l.level === user?.classification);
+  const matchedLessons = lessons.filter(l => l.username === user?.username || (!l.username && l.level === user?.classification));
 
   const handleOpenLesson = (lesson) => {
     setIsTakingProgressTest(false);

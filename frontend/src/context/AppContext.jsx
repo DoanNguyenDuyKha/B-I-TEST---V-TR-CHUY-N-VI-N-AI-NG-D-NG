@@ -57,9 +57,13 @@ export const AppProvider = ({ children }) => {
   }, [user]);
 
   // Fetch initial lessons
-  const fetchLessons = async (level = '') => {
+  const fetchLessons = async (level = '', username = '') => {
     try {
-      const url = level ? `${API_BASE}/lessons?level=${level}` : `${API_BASE}/lessons`;
+      const url = username 
+        ? `${API_BASE}/lessons?username=${username}`
+        : level 
+          ? `${API_BASE}/lessons?level=${level}` 
+          : `${API_BASE}/lessons`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -149,8 +153,12 @@ export const AppProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchLessons();
-  }, []);
+    if (user) {
+      fetchLessons(user.classification, user.username);
+    } else {
+      fetchLessons();
+    }
+  }, [user]);
 
   const fetchStudents = async () => {
     try {

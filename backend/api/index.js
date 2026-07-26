@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { User, Lesson, Submission } from './models.js';
-import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion, aiLessonChat, aiSpeakingChat, aiGeneratePlacementTest } from './gemini.js';
+import { aiEvaluateWriting, aiGenerateProgressTest, aiEvaluatePromotion, aiLessonChat, aiSpeakingChat, aiGeneratePlacementTest, aiGenerateCustomCurriculum } from './gemini.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -410,17 +410,52 @@ app.post('/api/placement-test', async (req, res) => {
     });
     await placementSub.save();
 
+    // Generate AI Custom Curriculum based on classification and target
+    const target = updatedUser.target || "General English";
+    const customLessons = await aiGenerateCustomCurriculum(classification, target);
+    
+    let matchedLessons = [];
+    if (customLessons && customLessons.length > 0) {
+      // Clean up previous custom lessons for this user if any
+      await Lesson.deleteMany({ username });
+      
+      const prepared = customLessons.map(l => {
+        l.username = username;
+        return l;
+      });
+      const inserted = await Lesson.insertMany(prepared);
+      matchedLessons = inserted.map(l => {
+        const obj = l.toObject();
+        obj.id = obj._id.toString();
+        return obj;
+      });
+    } else {
+      // Fallback: Copy standard lessons to user-specific space
+      const stdLessons = await Lesson.find({ level: classification, username: null });
+      if (stdLessons.length > 0) {
+        await Lesson.deleteMany({ username });
+        const copied = stdLessons.map(l => {
+          const obj = l.toObject();
+          delete obj._id;
+          obj.username = username;
+          return obj;
+        });
+        const inserted = await Lesson.insertMany(copied);
+        matchedLessons = inserted.map(l => {
+          const obj = l.toObject();
+          obj.id = obj._id.toString();
+          return obj;
+        });
+      }
+    }
+
     res.json({
       username,
       quizScore: `${quizScore}/${totalQuiz}`,
       questionsFeedback,
       essayEvaluation: essayEval,
       classification,
-      matchedLessons: (await Lesson.find({ level: classification })).map(l => {
-        const obj = l.toObject();
-        obj.id = obj._id.toString();
-        return obj;
-      })
+      matchedLessons
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

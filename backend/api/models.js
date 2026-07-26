@@ -23,6 +23,7 @@ const VocabularySchema = new mongoose.Schema({
 
 const LessonSchema = new mongoose.Schema({
   level: { type: String, required: true, enum: ['Basic', 'Intermediate', 'Advanced'] },
+  username: { type: String, default: null },
   title: { type: String, required: true },
   description: { type: String },
   vocabulary: [VocabularySchema],

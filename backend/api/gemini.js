@@ -278,3 +278,32 @@ export async function aiGeneratePlacementTest(target) {
     return null;
   }
 }
+
+// 7. AI GENERATE CUSTOM CURRICULUM (Dynamic customized lessons based on target and placement test score)
+export async function aiGenerateCustomCurriculum(classification, target) {
+  const systemInstruction = "You are an English syllabus designer. You must always return response in a strict JSON array containing exactly 3 highly detailed, premium lesson objects. Do NOT include any IT, programming, computer science, or technology-heavy topics. Focus entirely on daily communications, general networking, food, travel, art, social life, and conversational topics. The JSON array must contain exactly 3 objects. Each object must have keys: level, title, description, vocabulary (array of 5 objects containing: word, ipa, type, meaning, example), grammar (object with keys: point, explanation, structures as array of strings), reading (object with keys: title, content, questions as array of exactly 10 multiple-choice questions where each question has fields: id, question, options as array of 4 strings, answer as the exact correct option string), and essayPrompt (string). All explanations and meanings must be in Vietnamese.";
+
+  const prompt = `Design exactly 3 highly detailed, customized English lessons for a student classified at level "${classification}" with the learning target "${target}".
+  
+  The topics should align closely with the target "${target}" and should be practical, everyday communication or life-related, avoiding any IT/programming topics.
+  
+  Each of the 3 lessons must contain:
+  1. level: "${classification}"
+  2. title: Detailed and descriptive title.
+  3. description: Brief summary of what the student will learn.
+  4. vocabulary: Exactly 5 vocabulary words. Each word has fields: word, ipa, type, meaning (Vietnamese), example (English).
+  5. grammar: Object with fields: point, explanation (Vietnamese), structures (Array of strings).
+  6. reading: Object with fields: title, content (detailed reading passage of ~100 words), questions (exactly 10 multiple choice questions testing reading and grammar, each containing: id ('q1' to 'q10'), question, options (4 options), answer (the exact correct option string)).
+  7. essayPrompt: Exactly 1 writing prompt (Vietnamese description) matching this lesson's theme.
+  
+  Return only the JSON array containing exactly 3 objects. Ensure it is well-formed JSON.`;
+
+  try {
+    const rawResult = await callGemini(prompt, systemInstruction);
+    const cleaned = cleanJsonString(rawResult);
+    return JSON.parse(cleaned);
+  } catch (error) {
+    console.warn("Gemini Custom Curriculum Generation failed, returning null:", error.message);
+    return null;
+  }
+}
