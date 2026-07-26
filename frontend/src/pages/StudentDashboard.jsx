@@ -1151,6 +1151,7 @@ export default function StudentDashboard() {
               </div>
             </div>
 
+          </div>
         ) : (
           <div className="space-y-6">
             {/* Header: Learning Path Roadmap */}
